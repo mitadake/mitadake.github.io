@@ -1,0 +1,77 @@
+{
+  "name": "Mitesh Adake",
+  "skills": ["Python", "Machine Learning", "Data Engineering", "Natural Language Processing"],
+  "education": [
+{
+      "university": "University of Southern California",
+      "degree": "Masters in Computer Science",
+      "Attending period": "August 2024 - May 2026",
+      "GPA": "No GPA. Currently attending"
+    }
+,
+    {
+      "university": "Pune Institute of Computer Technology",
+      "degree": "Bachelor of Engineering in Computer",
+      "Attending period": "July 2019 - May 2023",
+      "GPA": "9.61"
+    }
+  ],
+  "experience": [
+    {
+      "role": "Data Engineer",
+      "company": "FedEx",
+      "year": "2023-2024",
+      "description": "Data Engineer at FedEx Advanced Capability Community. Part of team involved in development of HS(Harmonized Search) code search engine. I worked on Normalization (Hierarchical data handling) and Tokenization modules in the pipeline. Worked on code optimization and reducing the time complexity. Tech stack: Python, NLP, SQL and Abinitio"
+    },
+    {
+      "role": "AI & ML Intern",
+      "company": "Persistent Systems",
+      "year": "2022",
+      "description": "At Persistent Systems I was an AI & ML intern. I worked on building automated duplicate/ similar question suggestion Transformer and developed a chatbot using Transformer to summarize and answer specific questions related to policies of the company on the community portal. Tech stack: Python, Tensorflow, Keras, Transformer, Flask, FAST API and Docker"
+    },
+    {
+      "role": "Data Intern",
+      "company": "NICE",
+      "year": "2021-2022",
+      "description": "At NICE I was a Data Intern. I built a real-time file based ingestion system to process and store data in real-time. Tech stack: Python, HTML, CSS, JS, AWS(S3, DynamoDB, Lambda), Flask and MongoDB"
+    }
+  ],
+  "projects": [
+    {
+      "title": "Real-time Phishing Website Detection",
+      "description": "Implemented models to detect phishing websites in real-time. Implemented two machine learning models, Logistic Regression and Neural Network, to detect phishing websites in real-time with Edge browser extension: https://microsoftedge.microsoft.com/addons/detail/mr-phish/cfleogjiegdfbapbmindbpeebncpmbhf. Published a paper: https://www.ijrte.org/portfolio-item/a76080512123/."
+    },
+   {
+	"title": "Real-time Object Detection",
+      "description": "Implemented real-time object detection model. Code Repository: https://github.com/Mit-byte/PBL-2-Project"
+
+    },
+    {
+      "title": "Surface Crack Detection",
+      "description": "Applied Convolutional Neural Network and Quantum Neural Network to detect surface cracks on image dataset and compared the results. Code Repository: https://github.com/iotaisolutions/hackathon-submission"
+    },
+    {
+      "title": "Quantum Steganography Protocol",
+      "description": "Implemented a quantum steganography protocol for encrypting text data using Qiskit. Code Repository: https://github.com/Mit-byte/quantum-steganography"
+    },
+{
+      "title": "Data Analysis on Student Performance",
+      "description": "Performing real world data analysis of student performance in 3 courses. Comparing results of classical ML models(like Logistic regression and Gaussian Naive Bayes), QSVM(Quantum Support Vector Machine) and VQC(Variational Quantum Classifier). Dataset provided by Prof. Manjula Gandhi. Code Repository: https://github.com/Mit-byte/Data-analysis-on-Student-Performance-Dataset"
+    },
+    {
+      "title": "Breast Cancer Detection Web Application",
+      "description": "Developed an application for detecting breast cancer. Code Repository: https://github.com/Mit-byte/Breast-Cancer-Detection-using-CNN"
+    }
+  ],
+  "hobbies": ["Chess", "Football", "Kaggle competitions", "Quantum Computing"],
+  "featured talks":[
+	{"title": "Quantum Cryptography with Python coding and Qiskit",
+	 "Youtube Link": "https://youtu.be/zfrjzpVkrRA?t=4093"},
+	{"title": "Qiskit 101 live demo at Qiskit Fall Fest 2021",
+	 "Youtube Link": "https://www.youtube.com/watch?v=OjISR0GeptM"},
+	{"title": "Real world data analysis using Quantum and Classical ML algorithms",
+	 "Code Repository": "https://github.com/qiskit-advocate/qamp-spring-22/issues/18"}
+],
+  "Inspiration":["Andrej Karpathy", "Richard Feynman"]
+
+}
