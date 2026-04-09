@@ -84,7 +84,25 @@
         .theme-card {
             background-color: var(--bg-secondary);
             border-color: var(--border-color);
-            transition: background-color 0.3s ease, border-color 0.3s ease;
+            transition:
+                background-color 0.3s ease,
+                border-color 0.3s ease,
+                transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .theme-card:hover {
+            transform: translateY(-6px) scale(1.015);
+            box-shadow:
+                0 14px 28px -6px rgba(0, 0, 0, 0.12),
+                0 6px 12px -4px rgba(0, 0, 0, 0.08);
+            border-color: var(--accent);
+        }
+
+        [data-theme="dark"] .theme-card:hover {
+            box-shadow:
+                0 14px 28px -6px rgba(0, 0, 0, 0.4),
+                0 6px 12px -4px rgba(0, 0, 0, 0.25);
         }
 
         .theme-text-secondary { color: var(--text-secondary); }
@@ -111,8 +129,173 @@
             transform: scale(1.05);
         }
 
+        /* Landing hero — engaging motion (respects prefers-reduced-motion below) */
         .hero-bg {
-            background: #1a1a1a;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(125deg, #12121a 0%, #1a1a24 40%, #15151f 100%);
+            background-size: 200% 200%;
+            animation: hero-bg-shift 22s ease-in-out infinite;
+        }
+
+        .hero-bg::before,
+        .hero-bg::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            filter: blur(48px);
+            opacity: 0.55;
+            z-index: 0;
+        }
+
+        .hero-bg::before {
+            width: min(420px, 70vw);
+            height: min(420px, 70vw);
+            top: -12%;
+            right: -8%;
+            background: radial-gradient(circle at 30% 30%, rgba(96, 165, 250, 0.35), transparent 55%);
+            animation: hero-orb-a 18s ease-in-out infinite;
+        }
+
+        .hero-bg::after {
+            width: min(320px, 55vw);
+            height: min(320px, 55vw);
+            bottom: -18%;
+            left: -12%;
+            background: radial-gradient(circle at 70% 70%, rgba(167, 139, 250, 0.22), transparent 60%);
+            animation: hero-orb-b 24s ease-in-out infinite;
+        }
+
+        @keyframes hero-bg-shift {
+            0%, 100% { background-position: 0% 40%; }
+            50% { background-position: 100% 60%; }
+        }
+
+        @keyframes hero-orb-a {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-18px, 22px) scale(1.06); }
+        }
+
+        @keyframes hero-orb-b {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(24px, -16px) scale(1.08); }
+        }
+
+        @keyframes hero-rise {
+            from {
+                opacity: 0;
+                transform: translateY(32px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes hero-float-photo {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes hero-shimmer-line {
+            0% { transform: scaleX(0); opacity: 0; }
+            40% { opacity: 1; }
+            100% { transform: scaleX(1); opacity: 1; }
+        }
+
+        .hero-animate {
+            opacity: 0;
+            animation: hero-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation-delay: var(--ha-delay, 0s);
+        }
+
+        .hero-photo-wrap {
+            position: relative;
+        }
+
+        .hero-photo-wrap::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: conic-gradient(from 120deg, rgba(255,255,255,0.12), rgba(96, 165, 250, 0.35), rgba(167, 139, 250, 0.25), rgba(255,255,255,0.12));
+            z-index: -1;
+            animation: hero-photo-spin 14s linear infinite;
+        }
+
+        @keyframes hero-photo-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hero-photo-img {
+            animation: hero-float-photo 5.5s ease-in-out infinite;
+            animation-delay: 1s;
+        }
+
+        .hero-tagline-line {
+            display: inline-block;
+            position: relative;
+            padding-bottom: 6px;
+        }
+
+        .hero-tagline-line::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 2px;
+            width: 100%;
+            background: linear-gradient(90deg, rgba(96, 165, 250, 0.9), rgba(167, 139, 250, 0.6), transparent);
+            border-radius: 2px;
+            transform-origin: left center;
+            animation: hero-shimmer-line 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation-delay: calc(var(--ha-delay, 0s) + 0.55s);
+        }
+
+        .hero-skill-tag {
+            opacity: 0;
+            animation: hero-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .hero-skill-tag:nth-child(1) { animation-delay: 0.42s; }
+        .hero-skill-tag:nth-child(2) { animation-delay: 0.5s; }
+        .hero-skill-tag:nth-child(3) { animation-delay: 0.58s; }
+        .hero-skill-tag:nth-child(4) { animation-delay: 0.66s; }
+        .hero-skill-tag:nth-child(5) { animation-delay: 0.74s; }
+        .hero-skill-tag:nth-child(6) { animation-delay: 0.82s; }
+        .hero-skill-tag:nth-child(7) { animation-delay: 0.9s; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .hero-bg {
+                animation: none;
+                background: #1a1a1a;
+            }
+            .hero-bg::before,
+            .hero-bg::after {
+                animation: none;
+                opacity: 0.25;
+            }
+            .hero-animate {
+                opacity: 1;
+                animation: none;
+                transform: none;
+            }
+            .hero-photo-wrap::after {
+                animation: none;
+            }
+            .hero-photo-img {
+                animation: none;
+            }
+            .hero-tagline-line::after {
+                animation: none;
+                transform: scaleX(1);
+                opacity: 0.85;
+            }
+            .hero-skill-tag {
+                opacity: 1;
+                animation: none;
+            }
         }
 
         .card-hover {
@@ -145,10 +328,97 @@
             margin: 2px;
         }
 
+        .project-btn-outline:hover {
+            background: var(--accent-light);
+            border-color: var(--accent) !important;
+        }
+
         .section-divider {
             border: none;
             height: 1px;
             background: var(--border-color);
+        }
+
+        /* ── Scroll-reveal animations for Experience & Education ─── */
+        @keyframes scroll-fade-up {
+            from {
+                opacity: 0;
+                transform: translateY(36px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scroll-icon-pop {
+            0% {
+                opacity: 0;
+                transform: scale(0.3) rotate(-45deg);
+            }
+            60% {
+                transform: scale(1.15) rotate(4deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0);
+            }
+        }
+
+        @keyframes scroll-line-grow {
+            from { height: 0; }
+            to { height: calc(100% - 2.5rem); }
+        }
+
+        .scroll-reveal {
+            opacity: 0;
+        }
+
+        .scroll-reveal.revealed {
+            animation: scroll-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation-delay: var(--sr-delay, 0s);
+        }
+
+        .scroll-reveal.revealed .theme-card {
+            transition: box-shadow 0.5s ease 0.4s;
+        }
+
+        .scroll-reveal.revealed > div:first-child {
+            animation: scroll-icon-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            animation-delay: calc(var(--sr-delay, 0s) + 0.15s);
+            opacity: 0;
+        }
+
+        .scroll-reveal.revealed:not(:last-child)::after {
+            animation: scroll-line-grow 0.6s ease-out forwards;
+            animation-delay: calc(var(--sr-delay, 0s) + 0.35s);
+            height: 0;
+        }
+
+        .col-heading-reveal {
+            opacity: 0;
+        }
+        .col-heading-reveal.revealed {
+            animation: scroll-fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .scroll-reveal,
+            .col-heading-reveal {
+                opacity: 1;
+            }
+            .scroll-reveal.revealed,
+            .col-heading-reveal.revealed {
+                animation: none;
+            }
+            .scroll-reveal.revealed > div:first-child {
+                animation: none;
+                opacity: 1;
+            }
+            .scroll-reveal.revealed:not(:last-child)::after {
+                animation: none;
+                height: calc(100% - 2.5rem);
+            }
         }
 
         /* Agent highlight animation */
@@ -162,13 +432,162 @@
         }
 
         /* Chat widget */
-        #agent-fab {
+        @keyframes agent-fab-attention {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+                box-shadow: 0 4px 14px rgba(0,0,0,0.22), 0 0 0 0 rgba(71, 85, 105, 0.35);
+            }
+            45% {
+                transform: translateY(-3px) scale(1.06);
+                box-shadow: 0 8px 22px rgba(0,0,0,0.28), 0 0 0 8px rgba(71, 85, 105, 0.12);
+            }
+            55% {
+                transform: translateY(-3px) scale(1.06);
+                box-shadow: 0 8px 22px rgba(0,0,0,0.28), 0 0 0 8px rgba(71, 85, 105, 0.12);
+            }
+        }
+
+        @keyframes agent-fab-hint-pulse {
+            0%, 100% { transform: translateX(0) translateY(0); }
+            50% { transform: translateX(-2px) translateY(-2px); }
+        }
+
+        @keyframes agent-fab-hint-shimmer {
+            0% { transform: translateX(-120%) skewX(-12deg); }
+            100% { transform: translateX(220%) skewX(-12deg); }
+        }
+
+        @keyframes agent-fab-hint-cta-nudge {
+            0%, 100% { transform: translateX(0); opacity: 0.85; }
+            50% { transform: translateX(4px); opacity: 1; }
+        }
+
+        #agent-fab-wrap {
             position: fixed;
             bottom: 24px;
             right: 24px;
             z-index: 900;
-            width: 48px;
-            height: 48px;
+            display: flex;
+            flex-direction: row;
+            align-items: flex-end;
+            gap: 12px;
+            max-width: min(340px, calc(100vw - 40px));
+            pointer-events: none;
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        #agent-fab-wrap .agent-fab-hint {
+            pointer-events: auto;
+        }
+        #agent-fab-wrap #agent-fab {
+            pointer-events: auto;
+        }
+
+        #agent-fab-hint {
+            position: relative;
+            margin: 0;
+            padding: 0;
+            border: none;
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            max-width: 248px;
+            padding: 12px 14px 12px 12px;
+            border-radius: 16px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+            overflow: hidden;
+            animation: agent-fab-hint-pulse 3s ease-in-out infinite;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        #agent-fab-hint::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 45%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(148, 163, 184, 0.18),
+                transparent
+            );
+            animation: agent-fab-hint-shimmer 3.5s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        #agent-fab-hint > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        #agent-fab-hint:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+            border-color: var(--accent);
+        }
+
+        #agent-fab-hint:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 3px;
+        }
+
+        .agent-fab-hint-icon {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-light);
+            color: var(--accent);
+            font-size: 1rem;
+        }
+
+        .agent-fab-hint-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        .agent-fab-hint-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            line-height: 1.35;
+            color: var(--text-primary);
+        }
+
+        .agent-fab-hint-tip {
+            font-size: 0.75rem;
+            line-height: 1.4;
+            color: var(--text-secondary);
+            transition: opacity 0.35s ease;
+        }
+
+        .agent-fab-hint-cta {
+            flex-shrink: 0;
+            align-self: center;
+            font-size: 0.75rem;
+            color: var(--accent);
+            animation: agent-fab-hint-cta-nudge 1.8s ease-in-out infinite;
+        }
+
+        #agent-fab-wrap.agent-fab-hint-dismissed #agent-fab-hint {
+            display: none;
+        }
+
+        #agent-fab {
+            position: relative;
+            width: 58px;
+            height: 58px;
             border-radius: 50%;
             background: var(--text-primary);
             color: var(--bg-primary);
@@ -177,14 +596,57 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            transition: transform 0.2s ease, background 0.3s ease, color 0.3s ease;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.22);
+            transition: transform 0.2s ease, background 0.3s ease, color 0.3s ease, box-shadow 0.2s ease;
+            animation: agent-fab-attention 2.8s ease-in-out infinite;
         }
-        #agent-fab:hover { transform: scale(1.08); }
+        #agent-fab i {
+            font-size: 1.45rem;
+            line-height: 1;
+        }
+        #agent-fab:hover {
+            animation: none;
+            transform: scale(1.1);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #agent-fab {
+                animation: none;
+            }
+            #agent-fab-hint {
+                animation: none;
+            }
+            #agent-fab-hint::before {
+                animation: none;
+            }
+            .agent-fab-hint-cta {
+                animation: none;
+            }
+        }
+
+        @media (max-width: 520px) {
+            #agent-fab-wrap {
+                flex-direction: column-reverse;
+                align-items: flex-end;
+                gap: 8px;
+                max-width: min(280px, calc(100vw - 32px));
+            }
+            #agent-fab-hint {
+                max-width: 100%;
+                padding: 10px 12px;
+            }
+            .agent-fab-hint-title {
+                font-size: 0.8125rem;
+            }
+            .agent-fab-hint-tip {
+                font-size: 0.6875rem;
+            }
+        }
 
         #agent-panel {
             position: fixed;
-            bottom: 84px;
+            bottom: 94px;
             right: 24px;
             z-index: 901;
             width: 360px;
@@ -314,7 +776,7 @@
                 right: 8px;
                 left: 8px;
                 width: auto;
-                bottom: 76px;
+                bottom: 88px;
                 max-height: 70vh;
             }
         }
@@ -327,15 +789,17 @@
 
     <!-- Hero -->
     <header class="hero-bg text-white py-20">
-        <div class="container mx-auto px-4 max-w-4xl">
+        <div class="container mx-auto px-4 max-w-4xl relative z-10">
             <div class="flex flex-col md:flex-row items-center gap-10">
-                <div class="shrink-0">
-                    <img src="assets/Mitesh_Adake_Photo.jpeg" alt="Mitesh Adake" class="rounded-full w-44 h-44 object-cover border-2 border-white/20">
+                <div class="shrink-0 hero-animate hero-photo-wrap" style="--ha-delay: 0s;">
+                    <img src="assets/Mitesh_Adake_Photo.jpeg" alt="Mitesh Adake" class="hero-photo-img rounded-full w-44 h-44 object-cover border-2 border-white/20">
                 </div>
                 <div class="text-center md:text-left">
-                    <h1 class="text-4xl md:text-5xl font-bold mb-2">Mitesh Adake</h1>
-                    <p class="text-lg text-gray-300 mb-6">I work with data and train models.</p>
-                    <div class="flex justify-center md:justify-start space-x-3 mb-6">
+                    <h1 class="hero-animate text-4xl md:text-5xl font-bold mb-2 tracking-tight" style="--ha-delay: 0.1s;">Mitesh Adake</h1>
+                    <p class="text-lg text-gray-300 mb-6 hero-animate" style="--ha-delay: 0.22s;">
+                        <span class="hero-tagline-line">I work with data and train models.</span>
+                    </p>
+                    <div class="hero-animate flex justify-center md:justify-start space-x-3 mb-6" style="--ha-delay: 0.34s;">
                         <a href="https://www.linkedin.com/in/mitesh-adake/" target="_blank" class="text-gray-300 hover:text-white transition w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-white/40">
                             <i class="fab fa-linkedin-in"></i>
                         </a>
@@ -351,16 +815,19 @@
                         <a href="https://calendly.com/miteshadake" target="_blank" class="text-gray-300 hover:text-white transition w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-white/40" title="Schedule a call">
                             <i class="fas fa-calendar-alt"></i>
                         </a>
+                        <a href="assets/Mitesh%20Adake_Engineer_20260126.pdf" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-white transition w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-white/40" title="Resume (PDF)">
+                            <i class="fas fa-file-pdf"></i>
+                        </a>
                     </div>
                     <div id="demail" class="text-sm opacity-0 transition-opacity duration-500 text-gray-300 font-mono"></div>
                     <div class="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
-                        <span class="text-xs px-2 py-1 rounded border border-white/20 text-gray-300">Python</span>
-                        <span class="text-xs px-2 py-1 rounded border border-white/20 text-gray-300">Machine Learning</span>
-                        <span class="text-xs px-2 py-1 rounded border border-white/20 text-gray-300">Deep Learning</span>
-                        <span class="text-xs px-2 py-1 rounded border border-white/20 text-gray-300">NLP</span>
-                        <span class="text-xs px-2 py-1 rounded border border-white/20 text-gray-300">LLMs</span>
-                        <span class="text-xs px-2 py-1 rounded border border-white/20 text-gray-300">Transformers</span>
-                        <span class="text-xs px-2 py-1 rounded border border-white/20 text-gray-300">PyTorch</span>
+                        <span class="hero-skill-tag text-xs px-2 py-1 rounded border border-white/20 text-gray-300">Python</span>
+                        <span class="hero-skill-tag text-xs px-2 py-1 rounded border border-white/20 text-gray-300">Machine Learning</span>
+                        <span class="hero-skill-tag text-xs px-2 py-1 rounded border border-white/20 text-gray-300">Deep Learning</span>
+                        <span class="hero-skill-tag text-xs px-2 py-1 rounded border border-white/20 text-gray-300">NLP</span>
+                        <span class="hero-skill-tag text-xs px-2 py-1 rounded border border-white/20 text-gray-300">LLMs</span>
+                        <span class="hero-skill-tag text-xs px-2 py-1 rounded border border-white/20 text-gray-300">Transformers</span>
+                        <span class="hero-skill-tag text-xs px-2 py-1 rounded border border-white/20 text-gray-300">PyTorch</span>
                         
                     </div>
                 </div>
@@ -368,20 +835,26 @@
         </div>
     </header>
 
-    <!-- Experience -->
+    <!-- Experience & Education -->
     <section class="py-16">
-        <div class="container mx-auto px-4 max-w-4xl">
-            <h2 class="text-2xl font-bold mb-12 theme-text-primary">Experience</h2>
+        <div class="container mx-auto px-4 max-w-6xl">
+            <h2 class="text-2xl font-bold mb-10 theme-text-primary">Experience &amp; Education</h2>
 
-            <div class="space-y-8 relative">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-14 items-start">
+                <!-- Work experience column -->
+                <div>
+                    <h3 class="col-heading-reveal text-lg font-semibold mb-6 theme-text-primary flex items-center gap-2">
+                        <i class="fas fa-briefcase theme-text-secondary"></i> Work experience
+                    </h3>
+                    <div class="space-y-8 relative">
                 <!-- FedEx Revenue Management Intern (Current) -->
-                <div class="timeline-item relative pl-16" id="exp-fedex-intern">
+                <div class="timeline-item relative pl-16 scroll-reveal" id="exp-fedex-intern">
                     <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-chart-line"></i>
                     </div>
                     <div class="p-6 rounded-lg border theme-card">
                         <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
-                            <h3 class="text-xl font-semibold theme-text-primary">Revenue Management &mdash; Intern</h3>
+                            <h3 class="text-xl font-semibold theme-text-primary">Revenue Management Intern</h3>
                             <span class="text-sm theme-text-secondary">Sep 2025 &ndash; Present</span>
                         </div>
                         <div class="flex items-center mb-4">
@@ -402,13 +875,13 @@
                 </div>
 
                 <!-- FedEx Revenue Management Summer Intern -->
-                <div class="timeline-item relative pl-16" id="exp-fedex-summer">
+                <div class="timeline-item relative pl-16 scroll-reveal" id="exp-fedex-summer">
                     <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-database"></i>
                     </div>
                     <div class="p-6 rounded-lg border theme-card">
                         <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
-                            <h3 class="text-xl font-semibold theme-text-primary">Revenue Management &mdash; Summer Intern</h3>
+                            <h3 class="text-xl font-semibold theme-text-primary">Revenue Management Intern - Summer</h3>
                             <span class="text-sm theme-text-secondary">Jun 2025 &ndash; Aug 2025</span>
                         </div>
                         <div class="flex items-center mb-4">
@@ -428,39 +901,8 @@
                     </div>
                 </div>
 
-                <!-- M.S. Computer Science -->
-                <div class="timeline-item relative pl-16" id="edu-ms">
-                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
-                        <i class="fas fa-graduation-cap"></i>
-                    </div>
-                    <div class="p-6 rounded-lg border theme-card">
-                        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
-                            <h3 class="text-xl font-semibold theme-text-primary">M.S. in Computer Science</h3>
-                            <span class="text-sm theme-text-secondary">Aug 2024 &ndash; May 2026</span>
-                        </div>
-                        <div class="flex items-center mb-4">
-                            <img src="assets/usc_logo.png" alt="USC" class="w-8 h-8 mr-2 rounded">
-                            <span class="theme-text-secondary text-sm">USC Viterbi School of Engineering</span>
-                        </div>
-                        <p class="theme-text-secondary text-sm mb-2"><span class="font-medium">GPA:</span> 3.66/4.0</p>
-                        <p class="theme-text-primary text-sm">
-                            <span class="font-medium">Courses:</span> Applied Natural Language Processing, Advanced Computer Vision, Adversarial and Trustworthy Foundation Models, Analysis of Algorithms, Deep Learning and its Applications, Machine Learning for Data Science, Information Retrieval and Web Search Engines, Database Systems
-                        </p>
-                        <div class="flex flex-wrap gap-1 mt-4">
-                            <span class="tech-tag">Python</span>
-                            <span class="tech-tag">Machine Learning</span>
-                            <span class="tech-tag">Deep Learning</span>
-                            <span class="tech-tag">Natural Language Processing</span>
-                            <span class="tech-tag">Computer Vision</span>
-                            <span class="tech-tag">Databases</span>
-                            <span class="tech-tag">Large Language Models</span>
-                            <span class="tech-tag">LLM Safety</span>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- FedEx Software Engineer -->
-                <div class="timeline-item relative pl-16" id="exp-fedex-swe">
+                <div class="timeline-item relative pl-16 scroll-reveal" id="exp-fedex-swe">
                     <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-code"></i>
                     </div>
@@ -487,7 +929,7 @@
                 </div>
 
                 <!-- Persistent Systems -->
-                <div class="timeline-item relative pl-16" id="exp-persistent">
+                <div class="timeline-item relative pl-16 scroll-reveal" id="exp-persistent">
                     <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-robot"></i>
                     </div>
@@ -514,7 +956,7 @@
                 </div>
 
                 <!-- NICE -->
-                <div class="timeline-item relative pl-16" id="exp-nice">
+                <div class="timeline-item relative pl-16 scroll-reveal" id="exp-nice">
                     <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-cloud"></i>
                     </div>
@@ -524,6 +966,7 @@
                             <span class="text-sm theme-text-secondary">Nov 2021 &ndash; Apr 2022</span>
                         </div>
                         <div class="flex items-center mb-4">
+                            <img src="assets/NICEsys.jpg" alt="NICE" class="w-8 h-8 mr-2 rounded object-cover">
                             <span class="theme-text-secondary text-sm">NICE &middot; Pune, India</span>
                         </div>
                         <ul class="space-y-2 theme-text-primary text-sm">
@@ -538,9 +981,49 @@
                         </div>
                     </div>
                 </div>
+                    </div>
+                </div>
+
+                <!-- Education column -->
+                <div>
+                    <h3 class="col-heading-reveal text-lg font-semibold mb-6 theme-text-primary flex items-center gap-2">
+                        <i class="fas fa-graduation-cap theme-text-secondary"></i> Education
+                    </h3>
+                    <div class="space-y-8 relative">
+                <!-- M.S. Computer Science -->
+                <div class="timeline-item relative pl-16 scroll-reveal" id="edu-ms">
+                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="p-6 rounded-lg border theme-card">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+                            <h3 class="text-xl font-semibold theme-text-primary">M.S. in Computer Science</h3>
+                            <span class="text-sm theme-text-secondary">Aug 2024 &ndash; May 2026</span>
+                        </div>
+                        <div class="flex items-center mb-4">
+                            <img src="assets/usc_logo.png" alt="USC" class="w-8 h-8 mr-2 rounded">
+                            <span class="theme-text-secondary text-sm">USC Viterbi School of Engineering &middot; Los Angeles, CA</span>
+                        </div>
+                        <p class="theme-text-secondary text-sm mb-2"><span class="font-medium">GPA:</span> 3.66/4.0</p>
+                        <p class="theme-text-primary text-sm">
+                            <span class="font-medium">Courses:</span> Applied Natural Language Processing, Advanced Computer Vision, Adversarial and Trustworthy Foundation Models, Analysis of Algorithms, Deep Learning and its Applications, Machine Learning for Data Science, Information Retrieval and Web Search Engines, Database Systems
+                        </p>
+                        <div class="flex flex-wrap gap-1 mt-4">
+                            <span class="tech-tag">Python</span>
+                            <span class="tech-tag">Machine Learning</span>
+                            <span class="tech-tag">Deep Learning</span>
+                            <span class="tech-tag">Natural Language Processing</span>
+                            <span class="tech-tag">Computer Vision</span>
+                            <span class="tech-tag">Databases</span>
+                            <span class="tech-tag">Large Language Models</span>
+                            <span class="tech-tag">Agentic AI</span>
+                            <span class="tech-tag">LLM Safety</span>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- B.E. Computer Engineering -->
-                <div class="timeline-item relative pl-16" id="edu-be">
+                <div class="timeline-item relative pl-16 scroll-reveal" id="edu-be">
                     <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-university"></i>
                     </div>
@@ -551,14 +1034,28 @@
                         </div>
                         <div class="flex items-center mb-4">
                             <img src="assets/pict.jpg" alt="PICT" class="w-8 h-8 mr-2 rounded">
-                            <span class="theme-text-secondary text-sm">Pune Institute of Computer Technology</span>
+                            <span class="theme-text-secondary text-sm">Pune Institute of Computer Technology &middot; Pune, India</span>
                         </div>
                         <p class="theme-text-secondary text-sm mb-2"><span class="font-medium">GPA:</span> 3.84/4.0</p>
                         <p class="theme-text-primary text-sm">Honors in AI and ML. Coursework in Data Structures, Machine Learning, NLP, and Deep Learning.</p>
                         <div class="flex flex-wrap gap-1 mt-4">
-                            <span class="tech-tag">AI/ML</span>
+                            <span class="tech-tag">Python</span>
+                            <span class="tech-tag">Java</span>
+                            <span class="tech-tag">Algorithms</span>
+                            <span class="tech-tag">Data Structures</span>
+                            <span class="tech-tag">Operating Systems</span>
+                            <span class="tech-tag">Computer Networks</span>
+                            <span class="tech-tag">Database Management Systems</span>
+                            <span class="tech-tag">Software Engineering</span>
+                            <span class="tech-tag">Computer Graphics</span>
+                            <span class="tech-tag">Machine Learning</span>
+                            <span class="tech-tag">Natural Language Processing</span>
+                            <span class="tech-tag">Deep Learning</span>
+                            <span class="tech-tag">Blockchain</span>
                             <span class="tech-tag">Quantum Computing</span>
                         </div>
+                    </div>
+                </div>
                     </div>
                 </div>
             </div>
@@ -629,7 +1126,7 @@
                         </div>
                         <div class="flex gap-3">
                             <a href="https://tokengen.streamlit.app/" target="_blank" class="px-4 py-2 bg-gray-800 text-white rounded text-sm hover:bg-gray-700 transition">Live Demo</a>
-                            <a href="https://github.com/mitadake/tokengen" target="_blank" class="px-4 py-2 border rounded text-sm hover:bg-gray-100 transition theme-text-primary" style="border-color: var(--border-color);">
+                            <a href="https://github.com/mitadake/tokengen" target="_blank" class="project-btn-outline px-4 py-2 border rounded text-sm transition theme-text-primary" style="border-color: var(--border-color);">
                                 <i class="fab fa-github mr-1"></i>Code
                             </a>
                         </div>
@@ -656,7 +1153,7 @@
                     <p class="text-sm theme-text-secondary mb-3">Interactive HuggingFace tokenizer visualization tool</p>
                     <div class="flex gap-2">
                         <a href="https://anytoken.streamlit.app/" target="_blank" class="px-3 py-1.5 bg-gray-800 text-white rounded text-sm hover:bg-gray-700 transition">Website</a>
-                        <a href="https://github.com/mitadake/anytoken" target="_blank" class="px-3 py-1.5 border rounded text-sm hover:bg-gray-100 transition theme-text-primary" style="border-color: var(--border-color);">GitHub</a>
+                        <a href="https://github.com/mitadake/anytoken" target="_blank" class="project-btn-outline px-3 py-1.5 border rounded text-sm transition theme-text-primary" style="border-color: var(--border-color);">GitHub</a>
                     </div>
                 </div>
 
@@ -679,7 +1176,7 @@
                     <p class="text-sm theme-text-secondary mb-3">Production ML models with Edge browser extension</p>
                     <div class="flex gap-2">
                         <a href="https://microsoftedge.microsoft.com/addons/detail/mr-phish/cfleogjiegdfbapbmindbpeebncpmbhf" target="_blank" class="px-3 py-1.5 bg-gray-800 text-white rounded text-sm hover:bg-gray-700 transition">Extension</a>
-                        <a href="https://www.ijrte.org/portfolio-item/a76080512123/" target="_blank" class="px-3 py-1.5 border rounded text-sm hover:bg-gray-100 transition theme-text-primary" style="border-color: var(--border-color);">Paper</a>
+                        <a href="https://www.ijrte.org/portfolio-item/a76080512123/" target="_blank" class="project-btn-outline px-3 py-1.5 border rounded text-sm transition theme-text-primary" style="border-color: var(--border-color);">Paper</a>
                     </div>
                 </div>
 
@@ -688,7 +1185,7 @@
                     <img src="assets/obj_det.png" alt="Object Detection" class="w-full h-36 object-cover rounded mb-3">
                     <h3 class="font-semibold mb-2 theme-text-primary">Real-time Object Detection</h3>
                     <p class="text-sm theme-text-secondary mb-3">High-performance computer vision system</p>
-                    <a href="https://github.com/Mit-byte/PBL-2-Project" target="_blank" class="px-3 py-1.5 border rounded text-sm hover:bg-gray-100 transition theme-text-primary" style="border-color: var(--border-color);">GitHub</a>
+                    <a href="https://github.com/Mit-byte/PBL-2-Project" target="_blank" class="project-btn-outline px-3 py-1.5 border rounded text-sm transition theme-text-primary" style="border-color: var(--border-color);">GitHub</a>
                 </div>
             </div>
         </div>
@@ -777,11 +1274,21 @@
     </footer>
 
     <!-- AI Agent Chat Widget -->
-    <button id="agent-fab" title="Ask AI Agent">
-        <i class="fas fa-robot"></i>
-    </button>
+    <div id="agent-fab-wrap">
+        <button type="button" id="agent-fab-hint" class="agent-fab-hint" aria-label="Open AI portfolio assistant" aria-expanded="false" aria-controls="agent-panel">
+            <span class="agent-fab-hint-icon" aria-hidden="true"><i class="fas fa-robot"></i></span>
+            <span class="agent-fab-hint-copy">
+                <span class="agent-fab-hint-title">Hi! I am an AI agent. Let&rsquo;s chat.</span>
+                <span id="agent-fab-hint-tip" class="agent-fab-hint-tip">Ask about Mitesh, his resume, or book a call.</span>
+            </span>
+            <span class="agent-fab-hint-cta" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
+        </button>
+        <button id="agent-fab" type="button" title="Ask AI Agent" aria-label="Open AI portfolio assistant" aria-expanded="false" aria-controls="agent-panel">
+            <i class="fas fa-robot"></i>
+        </button>
+    </div>
 
-    <div id="agent-panel">
+    <div id="agent-panel" role="dialog" aria-label="Portfolio assistant chat">
         <div id="agent-panel-header">
             <div>
                 <span class="font-semibold text-sm theme-text-primary">Portfolio Agent</span>
@@ -852,6 +1359,33 @@
                 themeToggle.title = 'Switch to Dark Mode';
             }
         }
+
+        (function initScrollReveal() {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelectorAll('.scroll-reveal, .col-heading-reveal')
+                    .forEach(el => el.classList.add('revealed'));
+                return;
+            }
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+            document.querySelectorAll('.scroll-reveal').forEach((el, i) => {
+                const col = el.closest('[class*="space-y"]');
+                const siblings = col ? Array.from(col.querySelectorAll('.scroll-reveal')) : [el];
+                const idx = siblings.indexOf(el);
+                el.style.setProperty('--sr-delay', (idx * 0.12) + 's');
+                observer.observe(el);
+            });
+
+            document.querySelectorAll('.col-heading-reveal').forEach(el => observer.observe(el));
+        })();
     </script>
     <script src="agent.js"></script>
 </body>

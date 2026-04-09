@@ -151,15 +151,20 @@ const KB = [
 const DEFAULT_CHIPS = [
   "What is Mitesh's experience?",
   "Tell me about the FedEx roles",
-  "What NLP skills does he have?",
   "Show me his education",
   "What projects has he built?",
-  "Schedule a call with Mitesh"
+  "Schedule a call with Mitesh",
+  "Resume"
 ];
 
 const SIMILARITY_THRESHOLD = 0.1;
 const CALL_SCHEDULING_URL = 'https://calendly.com/miteshadake';
 const CALL_INTENT_PATTERN = /\b(schedule|book|set up|setup|arrange)\b.*\b(call|meeting|chat)\b|\bcall\b.*\b(schedule|book|meeting)\b/i;
+const RESUME_PATH = 'assets/Mitesh%20Adake_Engineer_20260126.pdf';
+const RESUME_URL = typeof window !== 'undefined'
+  ? new URL(RESUME_PATH, window.location.href).href
+  : RESUME_PATH;
+const RESUME_INTENT_PATTERN = /\b(cv|resume|curriculum\s+vitae)\b|where\s+.*\bresume\b|resume\s+where|download\s+.*\b(cv|resume)\b/i;
 
 // ── State ───────────────────────────────────────────────────────────────────
 let extractor = null;
@@ -208,7 +213,17 @@ function scrollToSection(id) {
 
 // ── UI Bindings ─────────────────────────────────────────────────────────────
 const fab = document.getElementById('agent-fab');
+const fabHint = document.getElementById('agent-fab-hint');
+const fabHintTip = document.getElementById('agent-fab-hint-tip');
+const fabWrap = document.getElementById('agent-fab-wrap');
 const panel = document.getElementById('agent-panel');
+
+const HINT_TIP_ROTATION = [
+  'Ask about Mitesh, his resume, or book a call.',
+  'Runs in your browser, your questions stay on this device.',
+  'Try a chip inside, or type anything you are curious about.'
+];
+let hintTipInterval = null;
 const closeBtn = document.getElementById('agent-close');
 const msgArea = document.getElementById('agent-messages');
 const chipsArea = document.getElementById('agent-chips');
@@ -218,9 +233,44 @@ const sendBtn = document.getElementById('agent-send');
 let panelOpen = false;
 let firstOpen = true;
 
+function setPanelAriaExpanded(open) {
+  const v = open ? 'true' : 'false';
+  if (fab) fab.setAttribute('aria-expanded', v);
+  if (fabHint) fabHint.setAttribute('aria-expanded', v);
+}
+
+function stopHintTipRotation() {
+  if (hintTipInterval) {
+    clearInterval(hintTipInterval);
+    hintTipInterval = null;
+  }
+}
+
+function startHintTipRotation() {
+  if (!fabHintTip || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let idx = 0;
+  hintTipInterval = setInterval(() => {
+    if (!fabWrap || fabWrap.classList.contains('agent-fab-hint-dismissed')) {
+      stopHintTipRotation();
+      return;
+    }
+    idx = (idx + 1) % HINT_TIP_ROTATION.length;
+    fabHintTip.style.opacity = '0.5';
+    setTimeout(() => {
+      fabHintTip.textContent = HINT_TIP_ROTATION[idx];
+      fabHintTip.style.opacity = '1';
+    }, 220);
+  }, 5200);
+}
+
 function togglePanel() {
   panelOpen = !panelOpen;
   panel.classList.toggle('open', panelOpen);
+  setPanelAriaExpanded(panelOpen);
+  if (panelOpen && fabWrap) {
+    fabWrap.classList.add('agent-fab-hint-dismissed');
+    stopHintTipRotation();
+  }
   if (panelOpen && firstOpen) {
     firstOpen = false;
     addBotMessage('Hi! I\'m an AI agent running <strong>entirely in your browser</strong> using a small transformers embedding model. Ask me anything about Mitesh\'s experience, skills, or projects. Note: I may not always provide accurate information.');
@@ -230,7 +280,11 @@ function togglePanel() {
 }
 
 fab.addEventListener('click', togglePanel);
+if (fabHint) fabHint.addEventListener('click', togglePanel);
 closeBtn.addEventListener('click', togglePanel);
+
+setPanelAriaExpanded(false);
+startHintTipRotation();
 
 function addBotMessage(html, sectionId) {
   const div = document.createElement('div');
@@ -322,16 +376,24 @@ async function handleQuery(text) {
   chipsArea.innerHTML = '';
   input.value = '';
 
-  if (!extractor || !kbEmbeddings) {
-    addBotMessage('The model is still loading. Please wait a moment and try again.');
+  if (CALL_INTENT_PATTERN.test(text)) {
+    addBotMessage(
+      `Absolutely - you can schedule a call here: <a href="${CALL_SCHEDULING_URL}" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline hover:text-blue-300">Schedule a call</a>. You can also message on <a href="https://www.linkedin.com/in/mitesh-adake/" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline hover:text-blue-300">LinkedIn</a>.`
+    );
+    showChips(['What is his experience?', 'What projects has he built?', 'What NLP skills does he have?']);
     return;
   }
 
-  if (CALL_INTENT_PATTERN.test(text)) {
+  if (RESUME_INTENT_PATTERN.test(text)) {
     addBotMessage(
-      `Absolutely - you can schedule a call here: <a href="${CALL_SCHEDULING_URL}" target="_blank" class="text-blue-400 underline hover:text-blue-300">Schedule a call</a>. You can also message on <a href="https://www.linkedin.com/in/mitesh-adake/" target="_blank" class="text-blue-400 underline hover:text-blue-300">LinkedIn</a>.`
+      `Here is Mitesh\'s resume (PDF): <a href="${RESUME_URL}" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline hover:text-blue-300">Open resume</a>.`
     );
-    showChips(['What is his experience?', 'What projects has he built?', 'What NLP skills does he have?']);
+    showChips(['What is his experience?', 'Schedule a call with Mitesh', 'What projects has he built?']);
+    return;
+  }
+
+  if (!extractor || !kbEmbeddings) {
+    addBotMessage('The model is still loading. Please wait a moment and try again.');
     return;
   }
 
