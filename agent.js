@@ -190,11 +190,26 @@ function sanitizeGemmaDisplayText(text) {
 // ── State ───────────────────────────────────────────────────────────────────
 let extractor = null;
 let kbEmbeddings = null;
-let isLoading = false;
 let transformersLib = null;
 let gemmaModel = null;
 let gemmaProcessor = null;
 let gemmaReady = false;
+/** One shared load chain (embedding + KB index + Gemma), started on page load. */
+let modelInitPromise = null;
+/** Model load status lines; flushed into the chat when the panel is open. */
+const modelStatusQueue = [];
+
+function queueModelStatus(html) {
+  modelStatusQueue.push(html);
+  flushModelStatusQueue();
+}
+
+function flushModelStatusQueue() {
+  if (!panelOpen) return;
+  while (modelStatusQueue.length) {
+    addBotMessage(modelStatusQueue.shift());
+  }
+}
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 function dot(a, b) {
@@ -343,7 +358,9 @@ function togglePanel() {
     firstOpen = false;
     addBotMessage('Hi! I\'m an AI agent running <strong>entirely in your browser</strong> powered by <strong>Gemma 4</strong>. Ask me anything about Mitesh\'s experience, skills, or projects. Note: I may not always provide accurate information.');
     showChips(DEFAULT_CHIPS);
-    initModel();
+    flushModelStatusQueue();
+  } else if (panelOpen) {
+    flushModelStatusQueue();
   }
 }
 
@@ -405,39 +422,38 @@ function removeLoadingIndicator() {
   if (el) el.remove();
 }
 
-// ── Model Init ──────────────────────────────────────────────────────────────
-async function initModel() {
-  if (extractor || isLoading) return;
-  isLoading = true;
-  addBotMessage('<i class="fas fa-download" style="margin-right:6px"></i>Loading AI models...');
-
-  try {
-    transformersLib = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.1');
-    const { pipeline } = transformersLib;
-    removeLastBotMessage();
-    addBotMessage('<i class="fas fa-cog fa-spin" style="margin-right:6px"></i>Initializing embedding model...');
-    extractor = await pipeline('feature-extraction', 'Xenova/bge-small-en-v1.5', {
-      dtype: 'q8',
-    });
-    removeLastBotMessage();
-    addBotMessage('<i class="fas fa-check" style="margin-right:6px;color:#22c55e"></i>Embedding model ready. Ask me anything!');
-    kbEmbeddings = await embedAll();
-    initGemma();
-  } catch (err) {
-    removeLastBotMessage();
-    addBotMessage('Failed to load model. Try refreshing the page.');
-    console.error('Agent model load error:', err);
-  } finally {
-    isLoading = false;
-  }
+// ── Model init (page-load background + shared promise) ─────────────────────
+function beginModelInit() {
+  if (modelInitPromise) return modelInitPromise;
+  modelInitPromise = (async () => {
+    try {
+      if (!transformersLib) {
+        queueModelStatus('<i class="fas fa-download" style="margin-right:6px"></i>Loading AI models...');
+        transformersLib = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.1');
+      }
+      if (!extractor) {
+        queueModelStatus('<i class="fas fa-cog fa-spin" style="margin-right:6px"></i>Initializing embedding model...');
+        const { pipeline } = transformersLib;
+        extractor = await pipeline('feature-extraction', 'Xenova/bge-small-en-v1.5', {
+          dtype: 'q8',
+        });
+        queueModelStatus('<i class="fas fa-check" style="margin-right:6px;color:#22c55e"></i>Embedding model ready. Ask me anything!');
+      }
+      if (!kbEmbeddings) {
+        kbEmbeddings = await embedAll();
+      }
+      await loadGemmaInBackground();
+    } catch (err) {
+      modelInitPromise = null;
+      queueModelStatus('Failed to load models. Try refreshing the page.');
+      flushModelStatusQueue();
+      console.error('Agent model load error:', err);
+      throw err;
+    }
+  })();
+  return modelInitPromise;
 }
 
-function removeLastBotMessage() {
-  const msgs = msgArea.querySelectorAll('.agent-msg.bot');
-  if (msgs.length) msgs[msgs.length - 1].remove();
-}
-
-// ── Gemma 4 Init & Generation ───────────────────────────────────────────────
 async function detectGemmaBackend() {
   if (navigator.gpu) {
     try {
@@ -448,15 +464,14 @@ async function detectGemmaBackend() {
   return { device: 'wasm', dtype: 'q4', label: 'WASM (CPU)' };
 }
 
-async function initGemma() {
+async function loadGemmaInBackground() {
+  if (gemmaReady || !transformersLib) return;
   const backend = await detectGemmaBackend();
-
+  queueModelStatus(
+    `<i class="fas fa-download" style="margin-right:6px"></i>Loading Gemma 4 via ${backend.label}... <span id="gemma-progress">0%</span>`
+  );
   try {
     const { AutoProcessor, Gemma4ForConditionalGeneration } = transformersLib;
-    addBotMessage(
-      `<i class="fas fa-download" style="margin-right:6px"></i>Loading Gemma 4 via ${backend.label}... <span id="gemma-progress">0%</span>`
-    );
-
     gemmaProcessor = await AutoProcessor.from_pretrained('onnx-community/gemma-4-E2B-it-ONNX');
     gemmaModel = await Gemma4ForConditionalGeneration.from_pretrained(
       'onnx-community/gemma-4-E2B-it-ONNX',
@@ -471,17 +486,24 @@ async function initGemma() {
         },
       }
     );
-
-    removeLastBotMessage();
     gemmaReady = true;
-    addBotMessage(
+    queueModelStatus(
       `<i class="fas fa-check" style="margin-right:6px;color:#22c55e"></i>Gemma 4 loaded (${backend.label}). Answers are now AI-generated.`
     );
   } catch (err) {
-    removeLastBotMessage();
-    addBotMessage('<i class="fas fa-info-circle" style="margin-right:6px;color:#f59e0b"></i>Gemma 4 unavailable. Using embedding-only mode.');
+    queueModelStatus(
+      '<i class="fas fa-info-circle" style="margin-right:6px;color:#f59e0b"></i>Gemma 4 unavailable. Using embedding-only mode.'
+    );
     console.error('Gemma load error:', err);
   }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    beginModelInit().catch(() => {});
+  });
+} else {
+  beginModelInit().catch(() => {});
 }
 
 function addStreamingBotMessage() {
