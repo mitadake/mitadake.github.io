@@ -70,8 +70,8 @@ const KB = [
   },
   {
     id: 'proj-tokengen',
-    text: 'Tell me about TokenGen. TokenGen is a visualization tool that shows layer-wise prediction evolution across transformer layers in GPT-2 and OPT large language models. It is Mitesh featured LLM interpretability project.',
-    answer: 'TokenGen is Mitesh\'s featured project -- a visualization tool for analyzing layer-wise token evolution patterns across 12+ transformer layers in GPT-2 and OPT models. Built with Streamlit and UMAP, it\'s an LLM interpretability tool. Try the live demo at tokengen.streamlit.app.',
+    text: 'Tell me about TokenGen. TokenGen is a visualization tool that shows layer-wise prediction evolution across transformer layers in GPT-2 and OPT large language models. It is an LLM interpretability project.',
+    answer: 'TokenGen is a visualization tool for analyzing layer-wise token evolution patterns across 12+ transformer layers in GPT-2 and OPT models. Built with Streamlit and UMAP, it\'s an LLM interpretability tool. Try the live demo at tokengen.streamlit.app.',
     followUps: ['What other projects has he built?', 'Tell me about hate speech unlearning', 'What about AnyToken?']
   },
   {

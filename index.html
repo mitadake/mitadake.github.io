@@ -1101,44 +1101,31 @@
 
     <!-- Projects -->
     <section class="py-16" id="section-projects">
-        <div class="container mx-auto px-4 max-w-4xl">
+        <div class="container mx-auto px-4 max-w-6xl">
             <h2 class="text-2xl font-bold mb-12 theme-text-primary">Projects</h2>
-
-            <!-- Featured: TokenGen -->
-            <div class="p-6 rounded-lg border theme-card mb-8" id="proj-tokengen">
-                <div class="flex flex-col md:flex-row gap-6">
-                    <div class="md:w-1/3">
-                        <img src="assets/prob_timeline.png" alt="TokenGen" class="w-full h-auto rounded-lg border" style="border-color: var(--border-color);">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- TokenGen -->
+                <div class="p-7 rounded-lg border theme-card" id="proj-tokengen">
+                    <img src="assets/prob_timeline.png" alt="TokenGen" class="w-full h-64 object-contain rounded mb-4 p-3" style="background: var(--bg-primary);">
+                    <h3 class="text-lg font-semibold mb-2 theme-text-primary">TokenGen</h3>
+                    <p class="text-base theme-text-secondary mb-4">Visualization tool to identify layer-wise token evolution patterns across 12+ transformer layers for GPT-2 and OPT models.</p>
+                    <div class="flex flex-wrap gap-1 mb-3">
+                        <span class="tech-tag">Transformers</span>
+                        <span class="tech-tag">GPT</span>
+                        <span class="tech-tag">Streamlit</span>
+                        <span class="tech-tag">UMAP</span>
                     </div>
-                    <div class="md:w-2/3">
-                        <div class="flex items-center gap-2 mb-2">
-                            <h3 class="text-xl font-semibold theme-text-primary">TokenGen</h3>
-                            <span class="text-xs px-2 py-0.5 rounded border theme-text-secondary" style="border-color: var(--border-color);">Featured</span>
-                        </div>
-                        <p class="text-sm theme-text-primary mb-4">
-                            Visualization tool to identify layer-wise token evolution patterns across 12+ transformer layers for GPT-2 and OPT models.
-                        </p>
-                        <div class="flex flex-wrap gap-1 mb-4">
-                            <span class="tech-tag">Transformers</span>
-                            <span class="tech-tag">GPT</span>
-                            <span class="tech-tag">Streamlit</span>
-                            <span class="tech-tag">UMAP</span>
-                        </div>
-                        <div class="flex gap-3">
-                            <a href="https://tokengen.streamlit.app/" target="_blank" class="px-4 py-2 bg-gray-800 text-white rounded text-sm hover:bg-gray-700 transition">Live Demo</a>
-                            <a href="https://github.com/mitadake/tokengen" target="_blank" class="project-btn-outline px-4 py-2 border rounded text-sm transition theme-text-primary" style="border-color: var(--border-color);">
-                                <i class="fab fa-github mr-1"></i>Code
-                            </a>
-                        </div>
+                    <div class="flex gap-2">
+                        <a href="https://tokengen.streamlit.app/" target="_blank" class="px-4 py-2 bg-gray-800 text-white rounded text-base hover:bg-gray-700 transition">Website</a>
+                        <a href="https://github.com/mitadake/tokengen" target="_blank" class="project-btn-outline px-4 py-2 border rounded text-base transition theme-text-primary" style="border-color: var(--border-color);">
+                            <i class="fab fa-github mr-1"></i>GitHub
+                        </a>
                     </div>
                 </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Hate Speech Unlearning -->
-                <div class="p-5 rounded-lg border theme-card" id="proj-hate-speech">
-                    <h3 class="font-semibold mb-2 theme-text-primary">Hate Speech Unlearning for LLMs</h3>
-                    <p class="text-sm theme-text-secondary mb-3">Implemented Task Vector Arithmetic, Contrastive Learning, and Fine-tuning to remove hate speech from LLaMA 3 models, dropping harmful rate from 62% to 34%.</p>
+                <div class="p-7 rounded-lg border theme-card" id="proj-hate-speech">
+                    <h3 class="text-lg font-semibold mb-2 theme-text-primary">Hate Speech Unlearning for LLMs</h3>
+                    <p class="text-base theme-text-secondary mb-4">Implemented Task Vector Arithmetic, Contrastive Learning, and Fine-tuning to remove hate speech from LLaMA 3 models, dropping harmful rate from 62% to 34%.</p>
                     <div class="flex flex-wrap gap-1">
                         <span class="tech-tag">LLaMA 3</span>
                         <span class="tech-tag">LLM Fine-tuning</span>
@@ -1147,21 +1134,21 @@
                 </div>
 
                 <!-- AnyToken -->
-                <div class="p-5 rounded-lg border theme-card" id="proj-anytoken">
-                    <img src="assets/anytoken.png" alt="AnyToken" class="w-full h-36 object-cover rounded mb-3">
-                    <h3 class="font-semibold mb-2 theme-text-primary">AnyToken</h3>
-                    <p class="text-sm theme-text-secondary mb-3">Interactive HuggingFace tokenizer visualization tool</p>
+                <div class="p-7 rounded-lg border theme-card" id="proj-anytoken">
+                    <img src="assets/anytoken.png" alt="AnyToken" class="w-full h-64 object-contain rounded mb-4 p-3" style="background: var(--bg-primary);">
+                    <h3 class="text-lg font-semibold mb-2 theme-text-primary">AnyToken</h3>
+                    <p class="text-base theme-text-secondary mb-4">Interactive HuggingFace tokenizer visualization tool</p>
                     <div class="flex gap-2">
-                        <a href="https://anytoken.streamlit.app/" target="_blank" class="px-3 py-1.5 bg-gray-800 text-white rounded text-sm hover:bg-gray-700 transition">Website</a>
-                        <a href="https://github.com/mitadake/anytoken" target="_blank" class="project-btn-outline px-3 py-1.5 border rounded text-sm transition theme-text-primary" style="border-color: var(--border-color);">GitHub</a>
+                        <a href="https://anytoken.streamlit.app/" target="_blank" class="px-4 py-2 bg-gray-800 text-white rounded text-base hover:bg-gray-700 transition">Website</a>
+                        <a href="https://github.com/mitadake/anytoken" target="_blank" class="project-btn-outline px-4 py-2 border rounded text-base transition theme-text-primary" style="border-color: var(--border-color);">GitHub</a>
                     </div>
                 </div>
 
                 <!-- PriceNet -->
-                <div class="p-5 rounded-lg border theme-card" id="proj-pricenet">
-                    <img src="assets/stockpriceproject.png" alt="PriceNet" class="w-full h-36 object-cover rounded mb-3">
-                    <h3 class="font-semibold mb-2 theme-text-primary">PriceNet</h3>
-                    <p class="text-sm theme-text-secondary mb-3">Stock price prediction using Llama and Gemini for explainable financial time series forecasting</p>
+                <div class="p-7 rounded-lg border theme-card" id="proj-pricenet">
+                    <img src="assets/stockpriceproject.png" alt="PriceNet" class="w-full h-64 object-contain rounded mb-4 p-3" style="background: var(--bg-primary);">
+                    <h3 class="text-lg font-semibold mb-2 theme-text-primary">PriceNet</h3>
+                    <p class="text-base theme-text-secondary mb-4">Stock price prediction using Llama and Gemini for explainable financial time series forecasting</p>
                     <div class="flex flex-wrap gap-1">
                         <span class="tech-tag">Llama</span>
                         <span class="tech-tag">Gemini</span>
@@ -1170,22 +1157,22 @@
                 </div>
 
                 <!-- Phishing Detection -->
-                <div class="p-5 rounded-lg border theme-card" id="proj-phishing">
-                    <img src="assets/phish_logo.png" alt="Phishing Detection" class="w-full h-36 object-cover rounded mb-3">
-                    <h3 class="font-semibold mb-2 theme-text-primary">Real-time Phishing Detection</h3>
-                    <p class="text-sm theme-text-secondary mb-3">Production ML models with Edge browser extension</p>
+                <div class="p-7 rounded-lg border theme-card" id="proj-phishing">
+                    <img src="assets/phish_logo.png" alt="Phishing Detection" class="w-full h-64 object-contain rounded mb-4 p-3" style="background: var(--bg-primary);">
+                    <h3 class="text-lg font-semibold mb-2 theme-text-primary">Real-time Phishing Detection</h3>
+                    <p class="text-base theme-text-secondary mb-4">Production ML models with Edge browser extension</p>
                     <div class="flex gap-2">
-                        <a href="https://microsoftedge.microsoft.com/addons/detail/mr-phish/cfleogjiegdfbapbmindbpeebncpmbhf" target="_blank" class="px-3 py-1.5 bg-gray-800 text-white rounded text-sm hover:bg-gray-700 transition">Extension</a>
-                        <a href="https://www.ijrte.org/portfolio-item/a76080512123/" target="_blank" class="project-btn-outline px-3 py-1.5 border rounded text-sm transition theme-text-primary" style="border-color: var(--border-color);">Paper</a>
+                        <a href="https://microsoftedge.microsoft.com/addons/detail/mr-phish/cfleogjiegdfbapbmindbpeebncpmbhf" target="_blank" class="px-4 py-2 bg-gray-800 text-white rounded text-base hover:bg-gray-700 transition">Extension</a>
+                        <a href="https://www.ijrte.org/portfolio-item/a76080512123/" target="_blank" class="project-btn-outline px-4 py-2 border rounded text-base transition theme-text-primary" style="border-color: var(--border-color);">Paper</a>
                     </div>
                 </div>
 
                 <!-- Object Detection -->
-                <div class="p-5 rounded-lg border theme-card" id="proj-objdet">
-                    <img src="assets/obj_det.png" alt="Object Detection" class="w-full h-36 object-cover rounded mb-3">
-                    <h3 class="font-semibold mb-2 theme-text-primary">Real-time Object Detection</h3>
-                    <p class="text-sm theme-text-secondary mb-3">High-performance computer vision system</p>
-                    <a href="https://github.com/Mit-byte/PBL-2-Project" target="_blank" class="project-btn-outline px-3 py-1.5 border rounded text-sm transition theme-text-primary" style="border-color: var(--border-color);">GitHub</a>
+                <div class="p-7 rounded-lg border theme-card" id="proj-objdet">
+                    <img src="assets/obj_det.png" alt="Object Detection" class="w-full h-64 object-contain rounded mb-4 p-3" style="background: var(--bg-primary);">
+                    <h3 class="text-lg font-semibold mb-2 theme-text-primary">Real-time Object Detection</h3>
+                    <p class="text-base theme-text-secondary mb-4">High-performance computer vision system</p>
+                    <a href="https://github.com/Mit-byte/PBL-2-Project" target="_blank" class="project-btn-outline px-4 py-2 border rounded text-base transition theme-text-primary" style="border-color: var(--border-color);">GitHub</a>
                 </div>
             </div>
         </div>
@@ -1210,7 +1197,7 @@
                         </li>
                         <li class="flex items-start gap-2">
                             <i class="fas fa-laptop-code mt-1 text-xs"></i>
-                            <span>Conducted hackathon and hands-on session on Quantum Computing</span>
+                            <span>Conducted hackathons and hands-on sessions on Quantum Computing (<a href="https://www.credly.com/users/mitesh-adake/badges#credly" target="_blank" class="text-blue-400 underline hover:text-blue-300">Credly Badges</a>)</span>
                         </li>
                     </ul>
                 </div>
