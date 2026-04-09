@@ -196,6 +196,8 @@ let gemmaProcessor = null;
 let gemmaReady = false;
 /** One shared load chain (embedding + KB index + Gemma), started on page load. */
 let modelInitPromise = null;
+/** Resolves when embeddings are ready (before Gemma), so queries can proceed early. */
+let embeddingInitPromise = null;
 /** Model load status lines; flushed into the chat when the panel is open. */
 const modelStatusQueue = [];
 
@@ -423,25 +425,30 @@ function removeLoadingIndicator() {
 }
 
 // ── Model init (page-load background + shared promise) ─────────────────────
+async function _initEmbeddings() {
+  if (!transformersLib) {
+    queueModelStatus('<i class="fas fa-download" style="margin-right:6px"></i>Loading AI models...');
+    transformersLib = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.1');
+  }
+  if (!extractor) {
+    queueModelStatus('<i class="fas fa-cog fa-spin" style="margin-right:6px"></i>Initializing embedding model...');
+    const { pipeline } = transformersLib;
+    extractor = await pipeline('feature-extraction', 'Xenova/bge-small-en-v1.5', {
+      dtype: 'q8',
+    });
+    queueModelStatus('<i class="fas fa-check" style="margin-right:6px;color:#22c55e"></i>Embedding model ready. Ask me anything!');
+  }
+  if (!kbEmbeddings) {
+    kbEmbeddings = await embedAll();
+  }
+}
+
 function beginModelInit() {
   if (modelInitPromise) return modelInitPromise;
+  embeddingInitPromise = _initEmbeddings();
   modelInitPromise = (async () => {
     try {
-      if (!transformersLib) {
-        queueModelStatus('<i class="fas fa-download" style="margin-right:6px"></i>Loading AI models...');
-        transformersLib = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.1');
-      }
-      if (!extractor) {
-        queueModelStatus('<i class="fas fa-cog fa-spin" style="margin-right:6px"></i>Initializing embedding model...');
-        const { pipeline } = transformersLib;
-        extractor = await pipeline('feature-extraction', 'Xenova/bge-small-en-v1.5', {
-          dtype: 'q8',
-        });
-        queueModelStatus('<i class="fas fa-check" style="margin-right:6px;color:#22c55e"></i>Embedding model ready. Ask me anything!');
-      }
-      if (!kbEmbeddings) {
-        kbEmbeddings = await embedAll();
-      }
+      await embeddingInitPromise;
       await loadGemmaInBackground();
     } catch (err) {
       modelInitPromise = null;
@@ -608,12 +615,23 @@ async function handleQuery(text) {
     return;
   }
 
+  addLoadingIndicator();
+
+  if (embeddingInitPromise) {
+    try {
+      await embeddingInitPromise;
+    } catch (_) {
+      removeLoadingIndicator();
+      addBotMessage('Failed to initialize the AI model. Please try refreshing the page.');
+      return;
+    }
+  }
+
   if (!extractor || !kbEmbeddings) {
+    removeLoadingIndicator();
     addBotMessage('The model is still loading. Please wait a moment and try again.');
     return;
   }
-
-  addLoadingIndicator();
 
   try {
     const queryVec = await embed(text);
