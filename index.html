@@ -3,34 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mitesh Adake | Neural Network Enthusiast & ML Engineer</title>
+    <title>Mitesh Adake | ML Engineer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="shortcut icon" type="image/jpg" href="assets/favic.png"/>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Inter', sans-serif; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
 
-        /* Theme Variables */
         :root {
-            --bg-primary: #f9fafb;
+            --bg-primary: #fafafa;
             --bg-secondary: #ffffff;
-            --bg-accent: #f3f4f6;
-            --text-primary: #1f2937;
+            --text-primary: #1a1a1a;
             --text-secondary: #6b7280;
             --border-color: #e5e7eb;
-            --shadow: rgba(0, 0, 0, 0.1);
+            --accent: #475569;
+            --accent-light: #f1f5f9;
         }
 
         [data-theme="dark"] {
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --bg-accent: #334155;
-            --text-primary: #ffffff;
-            --text-secondary: #f1f5f9;
-            --border-color: #475569;
-            --shadow: rgba(0, 0, 0, 0.3);
+            --bg-primary: #111111;
+            --bg-secondary: #1a1a1a;
+            --text-primary: #f5f5f5;
+            --text-secondary: #a1a1aa;
+            --border-color: #2a2a2a;
+            --accent: #94a3b8;
+            --accent-light: #1e293b;
         }
 
         body {
@@ -45,76 +43,8 @@
             transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
-        [data-theme="dark"] .theme-card {
-            background-color: #1e293b;
-            border: 1px solid #475569;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
-
-        [data-theme="light"] .theme-card {
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .theme-text-secondary {
-            color: var(--text-secondary);
-        }
-
-        .theme-text-primary {
-            color: var(--text-primary);
-        }
-
-        /* Timeline card backgrounds for dark/light mode */
-        [data-theme="dark"] .timeline-card-emerald {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(20, 184, 166, 0.15) 100%);
-            border-color: rgba(16, 185, 129, 0.3);
-        }
-
-        [data-theme="light"] .timeline-card-emerald {
-            background: linear-gradient(135deg, rgb(236, 253, 245) 0%, rgb(240, 253, 250) 100%);
-            border-color: rgb(167, 243, 208);
-        }
-
-        [data-theme="dark"] .timeline-card-purple {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(236, 72, 153, 0.15) 100%);
-            border-color: rgba(139, 92, 246, 0.3);
-        }
-
-        [data-theme="light"] .timeline-card-purple {
-            background: linear-gradient(135deg, rgb(250, 245, 255) 0%, rgb(252, 231, 243) 100%);
-            border-color: rgb(196, 181, 253);
-        }
-
-        [data-theme="dark"] .timeline-card-blue {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%);
-            border-color: rgba(59, 130, 246, 0.3);
-        }
-
-        [data-theme="light"] .timeline-card-blue {
-            background: linear-gradient(135deg, rgb(239, 246, 255) 0%, rgb(236, 254, 255) 100%);
-            border-color: rgb(147, 197, 253);
-        }
-
-        [data-theme="dark"] .timeline-card-green {
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(20, 184, 166, 0.15) 100%);
-            border-color: rgba(34, 197, 94, 0.3);
-        }
-
-        [data-theme="light"] .timeline-card-green {
-            background: linear-gradient(135deg, rgb(240, 253, 244) 0%, rgb(240, 253, 250) 100%);
-            border-color: rgb(134, 239, 172);
-        }
-
-        [data-theme="dark"] .timeline-card-indigo {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
-            border-color: rgba(99, 102, 241, 0.3);
-        }
-
-        [data-theme="light"] .timeline-card-indigo {
-            background: linear-gradient(135deg, rgb(238, 242, 255) 0%, rgb(250, 245, 255) 100%);
-            border-color: rgb(165, 180, 252);
-        }
+        .theme-text-secondary { color: var(--text-secondary); }
+        .theme-text-primary { color: var(--text-primary); }
 
         .theme-toggle {
             position: fixed;
@@ -122,582 +52,699 @@
             right: 20px;
             z-index: 1000;
             background: var(--bg-secondary);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 12px var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .theme-toggle:hover {
             transform: scale(1.05);
-            box-shadow: 0 6px 20px var(--shadow);
         }
 
-        @keyframes neural-pulse {
-            0%, 100% { opacity: 0.6; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.05); }
+        .hero-bg {
+            background: #1a1a1a;
         }
 
-        @keyframes gradient-shift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
-        .transformer-bg {
-            background: linear-gradient(135deg, #0f1419 0%, #1a202c 50%, #2d3748 100%);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .transformer-bg::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' viewBox='0 0 1200 800' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' style='stop-color:%2300d4aa;stop-opacity:0.4'/%3E%3Cstop offset='50%25' style='stop-color:%234f46e5;stop-opacity:0.4'/%3E%3Cstop offset='100%25' style='stop-color:%23f59e0b;stop-opacity:0.4'/%3E%3C/linearGradient%3E%3ClinearGradient id='grad2' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' style='stop-color:%23ec4899;stop-opacity:0.3'/%3E%3Cstop offset='100%25' style='stop-color:%236366f1;stop-opacity:0.3'/%3E%3C/linearGradient%3E%3C/defs%3E%3C!-- Transformer Architecture Blocks --%3E%3C!-- Encoder Stack --%3E%3Crect x='100' y='200' width='200' height='40' fill='url(%23grad1)' rx='8' stroke='%23ffffff' stroke-width='1' stroke-opacity='0.3'/%3E%3Ctext x='200' y='225' text-anchor='middle' fill='%23ffffff' font-size='14' font-weight='bold' font-family='monospace'%3EMulti-Head Attention%3C/text%3E%3Crect x='100' y='260' width='200' height='30' fill='url(%23grad2)' rx='6' stroke='%23ffffff' stroke-width='1' stroke-opacity='0.3'/%3E%3Ctext x='200' y='280' text-anchor='middle' fill='%23ffffff' font-size='12' font-weight='bold' font-family='monospace'%3EAdd %26 LayerNorm%3C/text%3E%3Crect x='100' y='310' width='200' height='35' fill='url(%23grad1)' rx='8' stroke='%23ffffff' stroke-width='1' stroke-opacity='0.3'/%3E%3Ctext x='200' y='332' text-anchor='middle' fill='%23ffffff' font-size='12' font-weight='bold' font-family='monospace'%3EFeed Forward%3C/text%3E%3Crect x='100' y='365' width='200' height='30' fill='url(%23grad2)' rx='6' stroke='%23ffffff' stroke-width='1' stroke-opacity='0.3'/%3E%3Ctext x='200' y='385' text-anchor='middle' fill='%23ffffff' font-size='12' font-weight='bold' font-family='monospace'%3EAdd %26 LayerNorm%3C/text%3E%3C!-- Decoder Stack --%3E%3Crect x='400' y='200' width='200' height='40' fill='url(%23grad1)' rx='8' stroke='%23ffffff' stroke-width='1' stroke-opacity='0.3'/%3E%3Ctext x='500' y='225' text-anchor='middle' fill='%23ffffff' font-size='14' font-weight='bold' font-family='monospace'%3EMasked Attention%3C/text%3E%3Crect x='400' y='260' width='200' height='30' fill='url(%23grad2)' rx='6' stroke='%23ffffff' stroke-width='1' stroke-opacity='0.3'/%3E%3Ctext x='500' y='280' text-anchor='middle' fill='%23ffffff' font-size='12' font-weight='bold' font-family='monospace'%3EAdd %26 LayerNorm%3C/text%3E%3Crect x='400' y='310' width='200' height='35' fill='url(%23grad1)' rx='8' stroke='%23ffffff' stroke-width='1' stroke-opacity='0.3'/%3E%3Ctext x='500' y='332' text-anchor='middle' fill='%23ffffff' font-size='12' font-weight='bold' font-family='monospace'%3ECross Attention%3C/text%3E%3Crect x='400' y='365' width='200' height='30' fill='url(%23grad2)' rx='6' stroke='%23ffffff' stroke-width='1' stroke-opacity='0.3'/%3E%3Ctext x='500' y='385' text-anchor='middle' fill='%23ffffff' font-size='12' font-weight='bold' font-family='monospace'%3EAdd %26 LayerNorm%3C/text%3E%3C!-- Attention Heads Visualization --%3E%3Ccircle cx='150' cy='150' r='8' fill='%2300d4aa' opacity='0.8'/%3E%3Ccircle cx='180' cy='140' r='6' fill='%234f46e5' opacity='0.8'/%3E%3Ccircle cx='210' cy='155' r='7' fill='%23f59e0b' opacity='0.8'/%3E%3Ccircle cx='240' cy='145' r='5' fill='%23ec4899' opacity='0.8'/%3E%3Ccircle cx='450' cy='150' r='8' fill='%2300d4aa' opacity='0.8'/%3E%3Ccircle cx='480' cy='140' r='6' fill='%234f46e5' opacity='0.8'/%3E%3Ccircle cx='510' cy='155' r='7' fill='%23f59e0b' opacity='0.8'/%3E%3Ccircle cx='540' cy='145' r='5' fill='%23ec4899' opacity='0.8'/%3E%3C!-- Flow Arrows --%3E%3Cpath d='M200 240 L200 260' stroke='%23ffffff' stroke-width='2' fill='none' opacity='0.6'/%3E%3Cpath d='M200 290 L200 310' stroke='%23ffffff' stroke-width='2' fill='none' opacity='0.6'/%3E%3Cpath d='M200 345 L200 365' stroke='%23ffffff' stroke-width='2' fill='none' opacity='0.6'/%3E%3Cpath d='M500 240 L500 260' stroke='%23ffffff' stroke-width='2' fill='none' opacity='0.6'/%3E%3Cpath d='M500 290 L500 310' stroke='%23ffffff' stroke-width='2' fill='none' opacity='0.6'/%3E%3Cpath d='M500 345 L500 365' stroke='%23ffffff' stroke-width='2' fill='none' opacity='0.6'/%3E%3C!-- Connection between encoder and decoder --%3E%3Cpath d='M300 327 Q350 327 400 327' stroke='%2300d4aa' stroke-width='3' fill='none' opacity='0.7' stroke-dasharray='5,5'/%3E%3Ctext x='350' y='320' text-anchor='middle' fill='%2300d4aa' font-size='10' font-weight='bold' font-family='monospace'%3EEncoder-Decoder%3C/text%3E%3C!-- Input/Output Labels --%3E%3Ctext x='200' y='180' text-anchor='middle' fill='%23ffffff' font-size='16' font-weight='bold' font-family='monospace'%3EENCODER%3C/text%3E%3Ctext x='500' y='180' text-anchor='middle' fill='%23ffffff' font-size='16' font-weight='bold' font-family='monospace'%3EDECODER%3C/text%3E%3Ctext x='200' y='420' text-anchor='middle' fill='%2300d4aa' font-size='12' font-weight='bold' font-family='monospace'%3EInput Embeddings%3C/text%3E%3Ctext x='500' y='420' text-anchor='middle' fill='%23f59e0b' font-size='12' font-weight='bold' font-family='monospace'%3EOutput Embeddings%3C/text%3E%3C!-- Position Encoding Waves --%3E%3Cpath d='M700 300 Q720 280 740 300 T780 300' stroke='%236366f1' stroke-width='2' fill='none' opacity='0.5'/%3E%3Cpath d='M700 320 Q720 300 740 320 T780 320' stroke='%23ec4899' stroke-width='2' fill='none' opacity='0.5'/%3E%3Ctext x='740' y='270' text-anchor='middle' fill='%23ffffff' font-size='12' font-weight='bold' font-family='monospace'%3EPositional%3C/text%3E%3Ctext x='740' y='285' text-anchor='middle' fill='%23ffffff' font-size='12' font-weight='bold' font-family='monospace'%3EEncoding%3C/text%3E%3C/svg%3E") no-repeat center center;
-            background-size: cover;
-            opacity: 0.8;
-            animation: transformer-glow 15s ease-in-out infinite;
-        }
-
-        .transformer-bg::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(0, 212, 170, 0.1) 15%, transparent 40%),
-                radial-gradient(circle at 80% 70%, rgba(79, 70, 229, 0.1) 15%, transparent 40%),
-                radial-gradient(circle at 60% 20%, rgba(245, 158, 11, 0.1) 15%, transparent 40%);
-            animation: transformer-float 20s ease-in-out infinite;
-        }
-
-        @keyframes transformer-glow {
-            0%, 100% { filter: brightness(1) saturate(1); }
-            50% { filter: brightness(1.2) saturate(1.3); }
-        }
-
-        @keyframes transformer-float {
-            0%, 100% { 
-                background-position: 0% 0%, 100% 100%, 50% 0%;
-            }
-            33% { 
-                background-position: 100% 50%, 0% 50%, 80% 30%;
-            }
-            66% { 
-                background-position: 50% 100%, 50% 0%, 20% 70%;
-            }
-        }
-        
         .card-hover:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
         }
-        
+
         .timeline-item:not(:last-child)::after {
             content: '';
             position: absolute;
-            left: 1.25rem; top: 2.5rem;
+            left: 1.25rem;
+            top: 2.5rem;
             height: calc(100% - 2.5rem);
-            width: 2px;
-            background: linear-gradient(to bottom, #667eea, #764ba2);
+            width: 1px;
+            background: var(--border-color);
         }
 
         .tech-tag {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; padding: 4px 12px; border-radius: 20px;
-            font-size: 0.8rem; font-weight: 500;
-            display: inline-block; margin: 2px;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            background: var(--accent-light);
+            color: var(--accent);
+            border: 1px solid var(--border-color);
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-block;
+            margin: 2px;
         }
 
-        .llm-accent {
-            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            font-weight: 700;
+        .section-divider {
+            border: none;
+            height: 1px;
+            background: var(--border-color);
         }
 
-        .nlp-accent {
-            background: linear-gradient(135deg, #00d4aa 0%, #00a085 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            font-weight: 700;
+        /* Agent highlight animation */
+        @keyframes agent-highlight {
+            0% { box-shadow: 0 0 0 0 rgba(71, 85, 105, 0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(71, 85, 105, 0.15); }
+            100% { box-shadow: 0 0 0 0 rgba(71, 85, 105, 0); }
+        }
+        .agent-highlight {
+            animation: agent-highlight 1.5s ease-out 2;
         }
 
-        .typing-animation {
-            border-right: 2px solid #00f2fe;
-            animation: blink 1s infinite;
+        /* Chat widget */
+        #agent-fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 900;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease, background 0.3s ease, color 0.3s ease;
+        }
+        #agent-fab:hover { transform: scale(1.08); }
+
+        #agent-panel {
+            position: fixed;
+            bottom: 84px;
+            right: 24px;
+            z-index: 901;
+            width: 360px;
+            max-height: 480px;
+            border-radius: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: translateY(12px) scale(0.95);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.25s ease, opacity 0.25s ease;
+        }
+        #agent-panel.open {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            pointer-events: auto;
         }
 
-        @keyframes blink {
-            0%, 50% { border-color: transparent; }
-            51%, 100% { border-color: #00f2fe; }
+        #agent-panel-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
         }
 
-        .matrix-rain { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; opacity: 0.03; }
+        #agent-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .agent-msg {
+            max-width: 85%;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 0.8125rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+        .agent-msg.bot {
+            align-self: flex-start;
+            background: var(--accent-light);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        .agent-msg.user {
+            align-self: flex-end;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        .agent-msg .view-link {
+            display: inline-block;
+            margin-top: 6px;
+            font-size: 0.75rem;
+            color: var(--accent);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .agent-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 0 16px 10px;
+            flex-shrink: 0;
+        }
+        .agent-chip {
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+        .agent-chip:hover {
+            background: var(--accent-light);
+            color: var(--text-primary);
+        }
+
+        #agent-input-area {
+            padding: 10px 12px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        #agent-input {
+            flex: 1;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 0.8125rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            outline: none;
+        }
+        #agent-input:focus {
+            border-color: var(--accent);
+        }
+        #agent-send {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 0.8125rem;
+            transition: background 0.15s;
+        }
+        #agent-send:hover { opacity: 0.8; }
+
+        @media (max-width: 420px) {
+            #agent-panel {
+                right: 8px;
+                left: 8px;
+                width: auto;
+                bottom: 76px;
+                max-height: 70vh;
+            }
+        }
     </style>
 </head>
-<body class="relative">
-    <!-- Theme Toggle -->
+<body>
     <button class="theme-toggle" id="themeToggle" title="Toggle Dark/Light Mode">
-        <i class="fas fa-moon text-xl theme-text-secondary" id="themeIcon"></i>
+        <i class="fas fa-moon text-sm theme-text-secondary" id="themeIcon"></i>
     </button>
-    <!-- Matrix Rain Background -->
-    <canvas class="matrix-rain" id="matrix"></canvas>
 
-    <!-- Header Section -->
-    <header class="transformer-bg text-white py-16 relative">
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="flex flex-col md:flex-row items-center justify-between">
-                <div class="md:w-1/3 mb-8 md:mb-0 flex justify-center md:justify-end">
-                    <div class="relative">
-                        <img src="assets/Mitesh_Adake_Photo.jpeg" alt="Mitesh Adake" class="rounded-full w-52 h-52 object-cover border-4 border-white shadow-2xl">
-                        <div class="absolute -top-2 -right-2 bg-gradient-to-r from-green-400 to-blue-500 text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
-                            🤖 Student
-                        </div>
-                    </div>
+    <!-- Hero -->
+    <header class="hero-bg text-white py-20">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <div class="flex flex-col md:flex-row items-center gap-10">
+                <div class="shrink-0">
+                    <img src="assets/Mitesh_Adake_Photo.jpeg" alt="Mitesh Adake" class="rounded-full w-44 h-44 object-cover border-2 border-white/20">
                 </div>
-                <div class="md:w-2/3 text-center md:text-left px-4">
-                    <h1 class="text-5xl md:text-6xl font-bold mb-4 leading-tight">
-                        <span class="block">Mitesh Adake</span>
-                        <span class="block text-2xl md:text-3xl font-light mt-2 typing-animation">
-                            Neural Network Enthusiast & <span class="llm-accent">ML</span> Engineer
-                        </span>
-                    </h1>
-                    <p class="text-xl md:text-2xl font-light mb-8 opacity-95 text-white drop-shadow-lg">
-                        Exploring the frontiers of <span class="text-cyan-200 font-bold bg-black/20 px-2 py-1 rounded">Natural Language Processing</span> 
-                        and <span class="text-orange-200 font-bold bg-black/20 px-2 py-1 rounded">Large Language Models</span> 🧠✨
-                    </p>
-                    <div class="flex justify-center md:justify-start space-x-4 mb-6">
-                        <a href="https://www.linkedin.com/in/mitesh-adake/" target="_blank" class="bg-white/20 backdrop-blur-md text-white hover:bg-white/30 rounded-full w-14 h-14 flex items-center justify-center transition duration-300 shadow-lg hover:scale-110">
-                            <i class="fab fa-linkedin-in text-xl"></i>
+                <div class="text-center md:text-left">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-2">Mitesh Adake</h1>
+                    <p class="text-lg text-gray-300 mb-6">I work with data and train models.</p>
+                    <div class="flex justify-center md:justify-start space-x-3 mb-6">
+                        <a href="https://www.linkedin.com/in/mitesh-adake/" target="_blank" class="text-gray-300 hover:text-white transition w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-white/40">
+                            <i class="fab fa-linkedin-in"></i>
                         </a>
-                        <a href="https://github.com/mitadake" target="_blank" class="bg-white/20 backdrop-blur-md text-white hover:bg-white/30 rounded-full w-14 h-14 flex items-center justify-center transition duration-300 shadow-lg hover:scale-110">
-                            <i class="fab fa-github text-xl"></i>
+                        <a href="https://github.com/mitadake" target="_blank" class="text-gray-300 hover:text-white transition w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-white/40">
+                            <i class="fab fa-github"></i>
                         </a>
-                        <a href="https://www.kaggle.com/miteshadake" target="_blank" class="bg-white/20 backdrop-blur-md text-white hover:bg-white/30 rounded-full w-14 h-14 flex items-center justify-center transition duration-300 shadow-lg hover:scale-110">
-                            <i class="fab fa-kaggle text-xl"></i>
+                        <a href="https://www.kaggle.com/miteshadake" target="_blank" class="text-gray-300 hover:text-white transition w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-white/40">
+                            <i class="fab fa-kaggle"></i>
                         </a>
-                        <button id="iemail" class="bg-white/20 backdrop-blur-md text-white hover:bg-white/30 rounded-full w-14 h-14 flex items-center justify-center transition duration-300 shadow-lg hover:scale-110">
-                            <i class="fas fa-envelope text-xl"></i>
+                        <button id="iemail" class="text-gray-300 hover:text-white transition w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-white/40">
+                            <i class="fas fa-envelope"></i>
                         </button>
                     </div>
-                    <div id="demail" class="mt-4 text-lg opacity-0 transition-opacity duration-500 bg-white/10 backdrop-blur-md rounded-lg p-3 mono"></div>
-                    
-                    <div class="flex flex-wrap justify-center md:justify-start gap-2 mt-6">
-                        <span class="tech-tag">🧠 Deep Learning</span>
-                        <span class="tech-tag">📝 NLP</span>
-                        <span class="tech-tag">🤖 LLMs</span>
-                        <span class="tech-tag">🔬 Transformers</span>
-                        <span class="tech-tag">⚡ PyTorch</span>
-                        <span class="tech-tag">🐍 Python</span>
+                    <div id="demail" class="text-sm opacity-0 transition-opacity duration-500 text-gray-300 font-mono"></div>
+                    <div class="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
+                        <span class="text-xs px-2 py-1 rounded border border-white/20 text-gray-300">Python</span>
+                        <span class="text-xs px-2 py-1 rounded border border-white/20 text-gray-300">Machine Learning</span>
+                        <span class="text-xs px-2 py-1 rounded border border-white/20 text-gray-300">Deep Learning</span>
+                        <span class="text-xs px-2 py-1 rounded border border-white/20 text-gray-300">NLP</span>
+                        <span class="text-xs px-2 py-1 rounded border border-white/20 text-gray-300">LLMs</span>
+                        <span class="text-xs px-2 py-1 rounded border border-white/20 text-gray-300">Transformers</span>
+                        <span class="text-xs px-2 py-1 rounded border border-white/20 text-gray-300">PyTorch</span>
+                        
                     </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Experience Section -->
-    <section class="py-16 theme-card">
-        <div class="container mx-auto px-4">
-            <h2 class="text-4xl font-bold text-center mb-16">
-                <span class="llm-accent">Professional Journey</span>
-            </h2>
-            
-            <div class="space-y-8 relative max-w-4xl mx-auto">
-                <!-- Current FedEx Intern -->
-                <div class="timeline-item relative pl-16">
-                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold z-10 shadow-lg">
+    <!-- Experience -->
+    <section class="py-16">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <h2 class="text-2xl font-bold mb-12 theme-text-primary">Experience</h2>
+
+            <div class="space-y-8 relative">
+                <!-- FedEx Revenue Management Intern (Current) -->
+                <div class="timeline-item relative pl-16" id="exp-fedex-intern">
+                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-chart-line"></i>
                     </div>
-                    <div class="p-8 rounded-xl shadow-lg border timeline-card-emerald theme-card">
-                        <div class="flex items-center mb-3">
-                            <div class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold mr-3 animate-pulse">
-                                🟢 CURRENT
-                            </div>
-                        </div>
-                        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-3">
-                            <h3 class="text-2xl font-bold theme-text-primary">Data Automation Intern</h3>
-                            <span class="text-emerald-600 font-semibold bg-emerald-100 px-3 py-1 rounded-full text-sm">June 2025 - Present</span>
+                    <div class="p-6 rounded-lg border theme-card">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+                            <h3 class="text-xl font-semibold theme-text-primary">Revenue Management &mdash; Intern</h3>
+                            <span class="text-sm theme-text-secondary">Sep 2025 &ndash; Present</span>
                         </div>
                         <div class="flex items-center mb-4">
-                            <img src="assets/Fedex.jpg" alt="FedEx" class="w-10 h-10 mr-3 rounded">
-                            <span class="theme-text-secondary font-medium">FedEx Revenue Management Team</span>
+                            <img src="assets/Fedex.jpg" alt="FedEx" class="w-8 h-8 mr-2 rounded">
+                            <span class="theme-text-secondary text-sm">FedEx &middot; Los Angeles, CA</span>
                         </div>
-                        <p class="mb-4 theme-text-primary">
-                            <span class="font-semibold nlp-accent">Data Automation:</span> Developing automated solutions using Python and SQL for pricing data processing and analysis in the revenue management team. 
-                        </p>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="tech-tag">🐍 Python</span>
-                            <span class="tech-tag">🗄️ SQL</span>
-                            <span class="tech-tag">📊 Data Automation</span>
-                            <span class="tech-tag">💰 Pricing Analytics</span>
-                            <span class="tech-tag">📈 Revenue Management</span>
+                        <ul class="space-y-2 theme-text-primary text-sm">
+                            <li>Built 3 automated systems leveraging machine learning and probability models to automate pricing analyst workflows, cutting processing time from ~5 days to ~1 hour</li>
+                            <li>Partnered with cross-functional teams to create dashboards and AI proof-of-concepts for data-driven pricing systems</li>
+                        </ul>
+                        <div class="flex flex-wrap gap-1 mt-4">
+                            <span class="tech-tag">Python</span>
+                            <span class="tech-tag">ML</span>
+                            <span class="tech-tag">AWS</span>
+                            <span class="tech-tag">Pricing Analytics</span>
                         </div>
                     </div>
                 </div>
-                
+
+                <!-- FedEx Revenue Management Summer Intern -->
+                <div class="timeline-item relative pl-16" id="exp-fedex-summer">
+                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="p-6 rounded-lg border theme-card">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+                            <h3 class="text-xl font-semibold theme-text-primary">Revenue Management &mdash; Summer Intern</h3>
+                            <span class="text-sm theme-text-secondary">Jun 2025 &ndash; Aug 2025</span>
+                        </div>
+                        <div class="flex items-center mb-4">
+                            <img src="assets/Fedex.jpg" alt="FedEx" class="w-8 h-8 mr-2 rounded">
+                            <span class="theme-text-secondary text-sm">FedEx &middot; Memphis, TN</span>
+                        </div>
+                        <ul class="space-y-2 theme-text-primary text-sm">
+                            <li>Designed and developed an automated system using Python, SQL, Streamlit, and Docker to process user inputs and perform complex, business-critical database operations</li>
+                            <li>Reduced manual processing time from ~10 days to ~10 minutes</li>
+                        </ul>
+                        <div class="flex flex-wrap gap-1 mt-4">
+                            <span class="tech-tag">Python</span>
+                            <span class="tech-tag">SQL</span>
+                            <span class="tech-tag">Streamlit</span>
+                            <span class="tech-tag">Docker</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- M.S. Computer Science -->
-                <div class="timeline-item relative pl-16">
-                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold z-10 shadow-lg">
+                <div class="timeline-item relative pl-16" id="edu-ms">
+                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-graduation-cap"></i>
                     </div>
-                    <div class="p-8 rounded-xl shadow-lg border timeline-card-purple theme-card">
-                        <div class="flex items-center mb-3">
-                            <div class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-bold mr-3 animate-pulse">
-                                📚 ONGOING
-                            </div>
-                        </div>
-                        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-3">
-                            <h3 class="text-2xl font-bold theme-text-primary">M.S. in Computer Science</h3>
-                            <span class="text-purple-600 font-semibold bg-purple-100 px-3 py-1 rounded-full text-sm">Aug 2024 - Present</span>
+                    <div class="p-6 rounded-lg border theme-card">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+                            <h3 class="text-xl font-semibold theme-text-primary">M.S. in Computer Science</h3>
+                            <span class="text-sm theme-text-secondary">Aug 2024 &ndash; May 2026</span>
                         </div>
                         <div class="flex items-center mb-4">
-                            <img src="assets/usc_logo.png" alt="USC" class="w-10 h-10 mr-3 rounded">
-                            <span class="theme-text-secondary font-medium">USC Viterbi School of Engineering</span>
+                            <img src="assets/usc_logo.png" alt="USC" class="w-8 h-8 mr-2 rounded">
+                            <span class="theme-text-secondary text-sm">USC Viterbi School of Engineering</span>
                         </div>
-                        <p class="theme-text-secondary mb-3"><span class="font-semibold">GPA:</span> 3.57/4.0</p>
-                        <p class="mb-4 theme-text-primary">
-                            <span class="font-semibold nlp-accent">Courses:</span> Analysis of Algorithms, Deep Learning and its Applications, Applied Natural Language Processing, Machine Learning for Data Science.
+                        <p class="theme-text-secondary text-sm mb-2"><span class="font-medium">GPA:</span> 3.66/4.0</p>
+                        <p class="theme-text-primary text-sm">
+                            <span class="font-medium">Courses:</span> Applied Natural Language Processing, Advanced Computer Vision, Adversarial and Trustworthy Foundation Models, Analysis of Algorithms, Deep Learning and its Applications, Machine Learning for Data Science, Information Retrieval and Web Search Engines, Database Systems
                         </p>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="tech-tag">🧠 Deep Learning</span>
-                            <span class="tech-tag">📝 NLP</span>
-                            <span class="tech-tag">📊 ML</span>
-                            <span class="tech-tag">⚡ Algorithms</span>
+                        <div class="flex flex-wrap gap-1 mt-4">
+                            <span class="tech-tag">Python</span>
+                            <span class="tech-tag">Machine Learning</span>
+                            <span class="tech-tag">Deep Learning</span>
+                            <span class="tech-tag">Natural Language Processing</span>
+                            <span class="tech-tag">Computer Vision</span>
+                            <span class="tech-tag">Databases</span>
+                            <span class="tech-tag">Large Language Models</span>
+                            <span class="tech-tag">LLM Safety</span>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Previous FedEx Software Engineer -->
-                <div class="timeline-item relative pl-16">
-                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold z-10 shadow-lg">
+
+                <!-- FedEx Software Engineer -->
+                <div class="timeline-item relative pl-16" id="exp-fedex-swe">
+                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-code"></i>
                     </div>
-                    <div class="p-8 rounded-xl shadow-lg border timeline-card-blue theme-card">
-                        <div class="flex items-center mb-3">
-                            <div class="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-bold mr-3">
-                                🏆 BRAVO ZULU AWARD
-                            </div>
-                        </div>
-                        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-3">
-                            <h3 class="text-2xl font-bold theme-text-primary">Software Engineer</h3>
-                            <span class="text-blue-600 font-semibold bg-blue-100 px-3 py-1 rounded-full text-sm">Aug 2023 - Jul 2024</span>
+                    <div class="p-6 rounded-lg border theme-card">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+                            <h3 class="text-xl font-semibold theme-text-primary">Software Engineer</h3>
+                            <span class="text-sm theme-text-secondary">Aug 2023 &ndash; Jul 2024</span>
                         </div>
                         <div class="flex items-center mb-4">
-                            <img src="assets/Fedex.jpg" alt="FedEx" class="w-10 h-10 mr-3 rounded">
-                            <span class="theme-text-secondary font-medium">FedEx Advanced Capability Community</span>
+                            <img src="assets/Fedex.jpg" alt="FedEx" class="w-8 h-8 mr-2 rounded">
+                            <span class="theme-text-secondary text-sm">FedEx &middot; Hyderabad, India</span>
                         </div>
-                        <div class="mb-4 space-y-2 theme-text-primary">
-                            <p><span class="font-semibold llm-accent">🚀 Impact:</span> Migrated Dataiku pipeline to Ab Initio across <strong>190+ countries</strong>, achieving <strong>$1M annual cost savings</strong></p>
-                            <p><span class="font-semibold nlp-accent">🎯 NLP Optimization:</span> Reduced data discrepancies from <strong>25% to negligible</strong>, improved HS2 code accuracy from <strong>86% to 91%</strong></p>
-                            <p><span class="font-semibold text-purple-600">⚡ Performance:</span> Eliminated data shuffling from <strong>75% of textual data</strong> through Python optimization</p>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="tech-tag">🐍 Python</span>
-                            <span class="tech-tag">📝 NLP</span>
-                            <span class="tech-tag">🗄️ SQL</span>
-                            <span class="tech-tag">⚡ Abinitio</span>
+                        <ul class="space-y-2 theme-text-primary text-sm">
+                            <li>Migrated Dataiku data pipeline to Ab Initio (ETL) for Harmonized Code search engine, resulting in annual cost savings of $1M</li>
+                            <li>Optimized NLP code in Python, reducing data discrepancies from 25% to negligible levels and eliminating data shuffling from 75% of text data</li>
+                        </ul>
+                        <div class="flex flex-wrap gap-1 mt-4">
+                            <span class="tech-tag">Python</span>
+                            <span class="tech-tag">Natural Language Processing</span>
+                            <span class="tech-tag">SQL</span>
+                            <span class="tech-tag">Ab Initio</span>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Persistent AI & ML Intern -->
-                <div class="timeline-item relative pl-16">
-                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-teal-500 flex items-center justify-center text-white font-bold z-10 shadow-lg">
+
+                <!-- Persistent Systems -->
+                <div class="timeline-item relative pl-16" id="exp-persistent">
+                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-robot"></i>
                     </div>
-                    <div class="p-8 rounded-xl shadow-lg border timeline-card-green theme-card">
-                        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-3">
-                            <h3 class="text-2xl font-bold theme-text-primary">AI & ML Intern</h3>
-                            <span class="text-green-600 font-semibold bg-green-100 px-3 py-1 rounded-full text-sm">Jun 2022 - Aug 2022</span>
+                    <div class="p-6 rounded-lg border theme-card">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+                            <h3 class="text-xl font-semibold theme-text-primary">Machine Learning Intern</h3>
+                            <span class="text-sm theme-text-secondary">Jun 2022 &ndash; Aug 2022</span>
                         </div>
                         <div class="flex items-center mb-4">
-                            <img src="assets/persistentsys.jpg" alt="Persistent Systems" class="w-10 h-10 mr-3 rounded">
-                            <span class="theme-text-secondary font-medium">Persistent Systems</span>
+                            <img src="assets/persistentsys.jpg" alt="Persistent Systems" class="w-8 h-8 mr-2 rounded">
+                            <span class="theme-text-secondary text-sm">Persistent Systems &middot; Pune, India</span>
                         </div>
-                        <div class="mb-4 space-y-2 theme-text-primary">
-                            <p><span class="font-semibold llm-accent">🎯 NLP Impact:</span> Implemented question deduplication system, reducing duplicate postings to <strong>10%</strong></p>
-                            <p><span class="font-semibold nlp-accent">👥 User Experience:</span> Enhanced community portal experience for <strong>1000+ employees</strong> with recommendation system</p>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="tech-tag">🐍 Python</span>
-                            <span class="tech-tag">🤖 Transformer</span>
-                            <span class="tech-tag">⚡ FastAPI</span>
-                            <span class="tech-tag">🐳 Docker</span>
+                        <ul class="space-y-2 theme-text-primary text-sm">
+                            <li>Implemented NLP-based question deduplication on the company's community portal, reducing duplicate postings to 10%</li>
+                            <li>Leveraged Python, Flask API, FastAPI, and Docker to create a scalable and robust solution</li>
+                        </ul>
+                        <div class="flex flex-wrap gap-1 mt-4">
+                            <span class="tech-tag">Python</span>
+                            <span class="tech-tag">NLP</span>
+                            <span class="tech-tag">FastAPI</span>
+                            <span class="tech-tag">Docker</span>
                         </div>
                     </div>
                 </div>
-                
+
+                <!-- NICE -->
+                <div class="timeline-item relative pl-16" id="exp-nice">
+                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
+                        <i class="fas fa-cloud"></i>
+                    </div>
+                    <div class="p-6 rounded-lg border theme-card">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+                            <h3 class="text-xl font-semibold theme-text-primary">Data Engineer Intern</h3>
+                            <span class="text-sm theme-text-secondary">Nov 2021 &ndash; Apr 2022</span>
+                        </div>
+                        <div class="flex items-center mb-4">
+                            <span class="theme-text-secondary text-sm">NICE &middot; Pune, India</span>
+                        </div>
+                        <ul class="space-y-2 theme-text-primary text-sm">
+                            <li>Built scalable, serverless real-time file ingestion using AWS (S3, DynamoDB, Lambda) and MongoDB</li>
+                            <li>Streamlined data management tasks by implementing a user-friendly Python Flask interface</li>
+                        </ul>
+                        <div class="flex flex-wrap gap-1 mt-4">
+                            <span class="tech-tag">AWS</span>
+                            <span class="tech-tag">MongoDB</span>
+                            <span class="tech-tag">Python</span>
+                            <span class="tech-tag">Flask</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- B.E. Computer Engineering -->
-                <div class="timeline-item relative pl-16">
-                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold z-10 shadow-lg">
+                <div class="timeline-item relative pl-16" id="edu-be">
+                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-university"></i>
                     </div>
-                    <div class="p-8 rounded-xl shadow-lg border timeline-card-indigo theme-card">
-                        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-3">
-                            <h3 class="text-2xl font-bold theme-text-primary">B.E. in Computer Engineering</h3>
-                            <span class="text-indigo-600 font-semibold bg-indigo-100 px-3 py-1 rounded-full text-sm">Jul 2019 - May 2023</span>
+                    <div class="p-6 rounded-lg border theme-card">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+                            <h3 class="text-xl font-semibold theme-text-primary">B.E. in Computer Engineering</h3>
+                            <span class="text-sm theme-text-secondary">Jul 2019 &ndash; May 2023</span>
                         </div>
                         <div class="flex items-center mb-4">
-                            <img src="assets/pict.jpg" alt="PICT" class="w-10 h-10 mr-3 rounded">
-                            <span class="theme-text-secondary font-medium">SCTR's Pune Institute of Computer Technology (PICT)</span>
+                            <img src="assets/pict.jpg" alt="PICT" class="w-8 h-8 mr-2 rounded">
+                            <span class="theme-text-secondary text-sm">Pune Institute of Computer Technology</span>
                         </div>
-                        <p class="mb-3 theme-text-primary">
-                            <span class="font-semibold llm-accent">AI Foundation:</span> First exposure to Machine Learning and Quantum Computing. Completed Honors in AI and ML.
+                        <p class="theme-text-secondary text-sm mb-2"><span class="font-medium">GPA:</span> 3.84/4.0</p>
+                        <p class="theme-text-primary text-sm">Honors in AI and ML. Coursework in Data Structures, Machine Learning, NLP, and Deep Learning.</p>
+                        <div class="flex flex-wrap gap-1 mt-4">
+                            <span class="tech-tag">AI/ML</span>
+                            <span class="tech-tag">Quantum Computing</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider max-w-4xl mx-auto">
+
+    <!-- Talks -->
+    <section class="py-16" id="section-talks">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <h2 class="text-2xl font-bold mb-12 theme-text-primary">Talks</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a href="https://youtu.be/zfrjzpVkrRA?t=4093" target="_blank" class="theme-card rounded-lg overflow-hidden border card-hover">
+                    <img src="assets/IEEE_com_soc.jpg" alt="IEEE Talk" class="w-full h-44 object-cover">
+                    <div class="p-4">
+                        <h3 class="font-semibold mb-1 theme-text-primary">Quantum Cryptography</h3>
+                        <p class="text-sm theme-text-secondary">Python implementation with Qiskit</p>
+                    </div>
+                </a>
+
+                <a href="https://www.youtube.com/watch?v=OjISR0GeptM" target="_blank" class="theme-card rounded-lg overflow-hidden border card-hover">
+                    <img src="assets/qiskit_fall_fest_2021.png" alt="Qiskit Fall Fest" class="w-full h-44 object-cover">
+                    <div class="p-4">
+                        <h3 class="font-semibold mb-1 theme-text-primary">Qiskit 101 Live Demo</h3>
+                        <p class="text-sm theme-text-secondary">Hands-on quantum computing demo</p>
+                    </div>
+                </a>
+
+                <a href="https://vimeo.com/718619428" target="_blank" class="theme-card rounded-lg overflow-hidden border card-hover">
+                    <img src="assets/qamp_badge.png" alt="QAMP" class="w-full h-44 object-cover">
+                    <div class="p-4">
+                        <h3 class="font-semibold mb-1 theme-text-primary">Quantum-Classical ML</h3>
+                        <p class="text-sm theme-text-secondary">Comparative analysis research</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider max-w-4xl mx-auto">
+
+    <!-- Projects -->
+    <section class="py-16" id="section-projects">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <h2 class="text-2xl font-bold mb-12 theme-text-primary">Projects</h2>
+
+            <!-- Featured: TokenGen -->
+            <div class="p-6 rounded-lg border theme-card mb-8" id="proj-tokengen">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="md:w-1/3">
+                        <img src="assets/prob_timeline.png" alt="TokenGen" class="w-full h-auto rounded-lg border" style="border-color: var(--border-color);">
+                    </div>
+                    <div class="md:w-2/3">
+                        <div class="flex items-center gap-2 mb-2">
+                            <h3 class="text-xl font-semibold theme-text-primary">TokenGen</h3>
+                            <span class="text-xs px-2 py-0.5 rounded border theme-text-secondary" style="border-color: var(--border-color);">Featured</span>
+                        </div>
+                        <p class="text-sm theme-text-primary mb-4">
+                            Visualization tool to identify layer-wise token evolution patterns across 12+ transformer layers for GPT-2 and OPT models.
                         </p>
-                        <p class="theme-text-secondary mb-4"><span class="font-semibold">Grade:</span> 9.61/10.0 GPA 🎓</p>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="tech-tag">🤖 AI/ML</span>
-                            <span class="tech-tag">⚛️ Quantum Computing</span>
+                        <div class="flex flex-wrap gap-1 mb-4">
+                            <span class="tech-tag">Transformers</span>
+                            <span class="tech-tag">GPT</span>
+                            <span class="tech-tag">Streamlit</span>
+                            <span class="tech-tag">UMAP</span>
                         </div>
-                        <div class="theme-card p-4 rounded-lg border-l-4 border-indigo-400" style="background: rgba(99, 102, 241, 0.1);">
-                            <h4 class="font-semibold mb-2 text-indigo-700 theme-text-primary">Internships during degree:</h4>
-                            <div class="space-y-2 text-sm theme-text-primary">
-                                <div class="flex justify-between items-center">
-                                    <span class="font-medium">🤖 AI & ML Intern - Persistent Systems</span>
-                                    <span class="text-indigo-600">Jun 2022 - Aug 2022</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="font-medium">💾 Data Intern - NICE</span>
-                                    <span class="text-indigo-600">Nov 2021 - Jun 2022</span>
-                                </div>
-                            </div>
+                        <div class="flex gap-3">
+                            <a href="https://tokengen.streamlit.app/" target="_blank" class="px-4 py-2 bg-gray-800 text-white rounded text-sm hover:bg-gray-700 transition">Live Demo</a>
+                            <a href="https://github.com/mitadake/tokengen" target="_blank" class="px-4 py-2 border rounded text-sm hover:bg-gray-100 transition theme-text-primary" style="border-color: var(--border-color);">
+                                <i class="fab fa-github mr-1"></i>Code
+                            </a>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Hate Speech Unlearning -->
+                <div class="p-5 rounded-lg border theme-card" id="proj-hate-speech">
+                    <h3 class="font-semibold mb-2 theme-text-primary">Hate Speech Unlearning for LLMs</h3>
+                    <p class="text-sm theme-text-secondary mb-3">Implemented Task Vector Arithmetic, Contrastive Learning, and Fine-tuning to remove hate speech from LLaMA 3 models, dropping harmful rate from 62% to 34%.</p>
+                    <div class="flex flex-wrap gap-1">
+                        <span class="tech-tag">LLaMA 3</span>
+                        <span class="tech-tag">LLM Fine-tuning</span>
+                        <span class="tech-tag">LLM Safety</span>
+                    </div>
+                </div>
+
+                <!-- AnyToken -->
+                <div class="p-5 rounded-lg border theme-card" id="proj-anytoken">
+                    <img src="assets/anytoken.png" alt="AnyToken" class="w-full h-36 object-cover rounded mb-3">
+                    <h3 class="font-semibold mb-2 theme-text-primary">AnyToken</h3>
+                    <p class="text-sm theme-text-secondary mb-3">Interactive HuggingFace tokenizer visualization tool</p>
+                    <div class="flex gap-2">
+                        <a href="https://anytoken.streamlit.app/" target="_blank" class="px-3 py-1.5 bg-gray-800 text-white rounded text-sm hover:bg-gray-700 transition">Website</a>
+                        <a href="https://github.com/mitadake/anytoken" target="_blank" class="px-3 py-1.5 border rounded text-sm hover:bg-gray-100 transition theme-text-primary" style="border-color: var(--border-color);">GitHub</a>
+                    </div>
+                </div>
+
+                <!-- PriceNet -->
+                <div class="p-5 rounded-lg border theme-card" id="proj-pricenet">
+                    <img src="assets/stockpriceproject.png" alt="PriceNet" class="w-full h-36 object-cover rounded mb-3">
+                    <h3 class="font-semibold mb-2 theme-text-primary">PriceNet</h3>
+                    <p class="text-sm theme-text-secondary mb-3">Stock price prediction using Llama and Gemini for explainable financial time series forecasting</p>
+                    <div class="flex flex-wrap gap-1">
+                        <span class="tech-tag">Llama</span>
+                        <span class="tech-tag">Gemini</span>
+                        <span class="tech-tag">FinTech</span>
+                    </div>
+                </div>
+
+                <!-- Phishing Detection -->
+                <div class="p-5 rounded-lg border theme-card" id="proj-phishing">
+                    <img src="assets/phish_logo.png" alt="Phishing Detection" class="w-full h-36 object-cover rounded mb-3">
+                    <h3 class="font-semibold mb-2 theme-text-primary">Real-time Phishing Detection</h3>
+                    <p class="text-sm theme-text-secondary mb-3">Production ML models with Edge browser extension</p>
+                    <div class="flex gap-2">
+                        <a href="https://microsoftedge.microsoft.com/addons/detail/mr-phish/cfleogjiegdfbapbmindbpeebncpmbhf" target="_blank" class="px-3 py-1.5 bg-gray-800 text-white rounded text-sm hover:bg-gray-700 transition">Extension</a>
+                        <a href="https://www.ijrte.org/portfolio-item/a76080512123/" target="_blank" class="px-3 py-1.5 border rounded text-sm hover:bg-gray-100 transition theme-text-primary" style="border-color: var(--border-color);">Paper</a>
+                    </div>
+                </div>
+
+                <!-- Object Detection -->
+                <div class="p-5 rounded-lg border theme-card" id="proj-objdet">
+                    <img src="assets/obj_det.png" alt="Object Detection" class="w-full h-36 object-cover rounded mb-3">
+                    <h3 class="font-semibold mb-2 theme-text-primary">Real-time Object Detection</h3>
+                    <p class="text-sm theme-text-secondary mb-3">High-performance computer vision system</p>
+                    <a href="https://github.com/Mit-byte/PBL-2-Project" target="_blank" class="px-3 py-1.5 border rounded text-sm hover:bg-gray-100 transition theme-text-primary" style="border-color: var(--border-color);">GitHub</a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Featured Talks Section -->
-    <section class="py-16 theme-card">
-        <div class="container mx-auto px-4">
-            <h2 class="text-4xl font-bold text-center mb-16">
-                <span class="nlp-accent">Featured Talks</span>
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="theme-card rounded-2xl overflow-hidden shadow-xl card-hover transition duration-500">
-                    <a href="https://youtu.be/zfrjzpVkrRA?t=4093" target="_blank">
-                        <img src="assets/IEEE_com_soc.jpg" alt="IEEE Talk" class="w-full h-56 object-cover">
-                    </a>
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold mb-3 theme-text-primary">🔐 Quantum Cryptography</h3>
-                        <p class="theme-text-secondary">Advanced Python implementation with Qiskit framework</p>
-                    </div>
-                </div>
-                
-                <div class="theme-card rounded-2xl overflow-hidden shadow-xl card-hover transition duration-500">
-                    <a href="https://www.youtube.com/watch?v=OjISR0GeptM" target="_blank">
-                        <img src="assets/qiskit_fall_fest_2021.png" alt="Qiskit Fall Fest" class="w-full h-56 object-cover">
-                    </a>
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold mb-3 theme-text-primary">⚛️ Qiskit 101 Live Demo</h3>
-                        <p class="theme-text-secondary">Hands-on quantum computing demonstration</p>
-                    </div>
-                </div>
-                
-                <div class="theme-card rounded-2xl overflow-hidden shadow-xl card-hover transition duration-500">
-                    <a href="https://vimeo.com/718619428" target="_blank">
-                        <img src="assets/qamp_badge.png" alt="QAMP" class="w-full h-56 object-cover">
-                    </a>
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold mb-3 theme-text-primary">🔬 Quantum-Classical ML</h3>
-                        <p class="theme-text-secondary">Comparative analysis research study</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    <hr class="section-divider max-w-4xl mx-auto">
 
-    <!-- Projects Section -->
-    <section class="py-16 theme-card">
-        <div class="container mx-auto px-4">
-            <h2 class="text-4xl font-bold text-center mb-16">
-                <span class="llm-accent">AI & NLP Projects</span>
-            </h2>
-            
-            <div class="space-y-12">
-                <!-- Featured Project - TokenGen -->
-                <div class="bg-gradient-to-r from-purple-600 to-blue-600 p-1 rounded-2xl shadow-2xl">
-                    <div class="theme-card rounded-2xl p-8">
-                        <div class="flex items-center mb-4">
-                            <div class="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-3 py-1 rounded-full text-sm font-bold mr-3">
-                                🌟 FEATURED
-                            </div>
-                            <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
-                                🔥 LLM Research
-                    </div>
-                        </div>
-                        <div class="flex flex-col md:flex-row gap-8">
-                            <div class="md:w-1/3">
-                                <img src="assets/prob_timeline.png" alt="TokenGen" class="w-full h-auto rounded-xl border-2 border-gray-200 shadow-lg">
-                            </div>
-                            <div class="md:w-2/3">
-                                <h3 class="text-3xl font-bold mb-4 llm-accent">TokenGen</h3>
-                                <p class="text-lg mb-6 theme-text-primary">
-                                    🧠 Advanced LLM Interpretability Tool: Interactive visualization platform for analyzing token prediction evolution and attention patterns in GPT-2/OPT models.
-                                </p>
-                                <div class="flex flex-wrap gap-2 mb-6">
-                                    <span class="tech-tag">🤖 Transformers</span>
-                                    <span class="tech-tag">🎯 GPT-2</span>
-                                    <span class="tech-tag">📊 Streamlit</span>
-                                    <span class="tech-tag">🔍 UMAP</span>
-                                </div>
-                                <div class="flex gap-3">
-                                    <a href="https://tokengen.streamlit.app/" target="_blank" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 transition font-semibold">
-                                        🚀 Live Demo
-                                    </a>
-                                    <a href="https://github.com/mitadake/tokengen" target="_blank" class="px-6 py-3 bg-gray-800 text-white rounded-xl hover:bg-gray-900 transition font-semibold">
-                                        <i class="fab fa-github mr-2"></i>Code
-                                    </a>
-                    </div>
-                </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Grid of Other Projects -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- AnyToken -->
-                    <div class="p-6 rounded-xl shadow-lg border timeline-card-blue theme-card">
-                        <img src="assets/anytoken.png" alt="AnyToken" class="w-full h-40 object-cover rounded-lg mb-4">
-                        <h3 class="text-xl font-bold nlp-accent mb-2">AnyToken</h3>
-                        <p class="theme-text-secondary mb-4">Interactive HuggingFace tokenizer visualization tool</p>
-                        <div class="flex gap-2">
-                            <a href="https://anytoken.streamlit.app/" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Website</a>
-                            <a href="https://github.com/mitadake/anytoken" target="_blank" class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition">GitHub</a>
-                    </div>
-                </div>
-                
-                    <!-- PriceNet -->
-                    <div class="p-6 rounded-xl shadow-lg border timeline-card-green theme-card">
-                        <img src="assets/stockpriceproject.png" alt="PriceNet" class="w-full h-40 object-cover rounded-lg mb-4">
-                        <h3 class="text-xl font-bold llm-accent mb-2">PriceNet</h3>
-                        <p class="theme-text-secondary mb-4">Explainable Financial AI using Llama & Gemini LLMs</p>
-                        <div class="flex flex-wrap gap-1">
-                            <span class="tech-tag">🦙 Llama</span>
-                            <span class="tech-tag">💎 Gemini</span>
-                            <span class="tech-tag">📈 FinTech</span>
-                    </div>
-                </div>
-                
-                    <!-- Phishing Detection -->
-                    <div class="p-6 rounded-xl shadow-lg border timeline-card-purple theme-card">
-                        <img src="assets/phish_logo.png" alt="Phishing Detection" class="w-full h-40 object-cover rounded-lg mb-4">
-                        <h3 class="text-xl font-bold nlp-accent mb-2">Real-time Phishing Detection</h3>
-                        <p class="theme-text-secondary mb-4">Production ML models with Edge browser extension</p>
-                        <div class="flex gap-2">
-                            <a href="https://microsoftedge.microsoft.com/addons/detail/mr-phish/cfleogjiegdfbapbmindbpeebncpmbhf" target="_blank" class="px-3 py-1 bg-blue-600 text-white rounded text-sm">Extension</a>
-                            <a href="https://www.ijrte.org/portfolio-item/a76080512123/" target="_blank" class="px-3 py-1 bg-green-600 text-white rounded text-sm">Paper</a>
-                    </div>
-                </div>
-                
-                    <!-- Object Detection -->
-                    <div class="p-6 rounded-xl shadow-lg border timeline-card-emerald theme-card">
-                        <img src="assets/obj_det.png" alt="Object Detection" class="w-full h-40 object-cover rounded-lg mb-4">
-                        <h3 class="text-xl font-bold llm-accent mb-2">Real-time Object Detection</h3>
-                        <p class="theme-text-secondary mb-4">High-performance computer vision system</p>
-                        <a href="https://github.com/Mit-byte/PBL-2-Project" target="_blank" class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition">GitHub</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    <!-- Beyond the Code -->
+    <section class="py-16" id="section-beyond">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <h2 class="text-2xl font-bold mb-12 theme-text-primary">Beyond the Code</h2>
 
-    <!-- Beyond the Code Section -->
-    <section class="py-16 theme-card">
-        <div class="container mx-auto px-4">
-            <h2 class="text-4xl font-bold text-center mb-16">
-                <span class="llm-accent">Beyond the Code</span>
-            </h2>
-            
-            <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="theme-card p-8 rounded-2xl shadow-lg">
-                    <h3 class="text-2xl font-bold mb-6 flex items-center theme-text-primary">
-                        <i class="fas fa-users text-purple-600 mr-3"></i>Community Impact
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="p-6 rounded-lg border theme-card" id="section-community">
+                    <h3 class="text-lg font-semibold mb-4 theme-text-primary">
+                        <i class="fas fa-users mr-2 theme-text-secondary"></i>Community
                     </h3>
-                    <ul class="space-y-4 theme-text-secondary">
-                    <li class="flex items-start">
-                            <span class="text-purple-600 mr-3 mt-1"><i class="fas fa-microphone"></i></span>
+                    <ul class="space-y-3 text-sm theme-text-secondary">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-microphone mt-1 text-xs"></i>
                             <span>Mentored IISC-IEEE Quantum Communications workshop as Qiskit Advocate</span>
-                    </li>
-                    <li class="flex items-start">
-                            <span class="text-purple-600 mr-3 mt-1"><i class="fas fa-laptop-code"></i></span>
-                            <span>Conducted hackathon and hands-on session at Delhi University</span>
-                    </li>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-laptop-code mt-1 text-xs"></i>
+                            <span>Conducted hackathon and hands-on session on Quantum Computing</span>
+                        </li>
                     </ul>
                 </div>
 
-                <div class="theme-card p-8 rounded-2xl shadow-lg">
-                    <h3 class="text-2xl font-bold mb-6 flex items-center theme-text-primary">
-                        <i class="fas fa-heart text-pink-600 mr-3"></i>Personal Interests
+                <div class="p-6 rounded-lg border theme-card" id="section-interests">
+                    <h3 class="text-lg font-semibold mb-4 theme-text-primary">
+                        <i class="fas fa-heart mr-2 theme-text-secondary"></i>Interests
                     </h3>
-                    <ul class="space-y-4 theme-text-secondary">
-                    <li class="flex items-start">
-                            <span class="text-pink-600 mr-3 mt-1"><i class="fas fa-chess"></i></span>
+                    <ul class="space-y-3 text-sm theme-text-secondary">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chess mt-1 text-xs"></i>
                             <span>Chess Player</span>
-                    </li>
-                    <li class="flex items-start">
-                            <span class="text-pink-600 mr-3 mt-1"><i class="fas fa-futbol"></i></span>
-                            <span>Football/Soccer enthusiast</span>
-                    </li>
-                    <li class="flex items-start">
-                            <span class="text-pink-600 mr-3 mt-1"><i class="fab fa-kaggle"></i></span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-futbol mt-1 text-xs"></i>
+                            <span>Football / Soccer enthusiast</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fab fa-kaggle mt-1 text-xs"></i>
                             <span>Active in Kaggle ML competitions</span>
-                    </li>
-                </ul>
+                        </li>
+                    </ul>
                 </div>
             </div>
 
-            <div class="mt-8 p-8 rounded-2xl border max-w-4xl mx-auto theme-card timeline-card-emerald">
-                <h3 class="text-2xl font-bold mb-4 flex items-center justify-center theme-text-primary">
-                    <i class="fas fa-lightbulb text-yellow-600 mr-3"></i>Inspiration
-                </h3>
-                <p class="text-lg text-center theme-text-primary">
-                    Deeply inspired by <strong class="text-yellow-700">Andrej Karpathy's</strong> approach to making AI accessible  and 
-                    <strong class="text-yellow-700">Richard Feynman's</strong> philosophy of understanding through teaching.
+            <div class="mt-6 p-6 rounded-lg border theme-card text-center">
+                <p class="text-sm theme-text-secondary">
+                    Inspired by <strong class="theme-text-primary">Andrej Karpathy's</strong> approach to making AI accessible and
+                    <strong class="theme-text-primary">Richard Feynman's</strong> philosophy of understanding through teaching.
                 </p>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="py-12 bg-gradient-to-r from-gray-900 to-gray-800 text-white">
+    <footer class="py-10 border-t" style="border-color: var(--border-color); background: var(--bg-secondary);">
         <div class="container mx-auto px-4 text-center">
-            <div class="mb-6">
-                <h3 class="text-2xl font-bold mb-2">Mitesh Adake</h3>
-                <p class="text-gray-300">Neural Network Enthusiast • ML Engineer</p>
-            </div>
-            
-            <div class="flex justify-center space-x-6 mb-8">
-                <a href="https://www.linkedin.com/in/mitesh-adake/" target="_blank" class="bg-blue-600 hover:bg-blue-700 rounded-full w-12 h-12 flex items-center justify-center transition duration-300 transform hover:scale-110">
-                    <i class="fab fa-linkedin-in text-xl"></i>
+            <p class="font-semibold theme-text-primary mb-1">Mitesh Adake</p>
+            <p class="text-sm theme-text-secondary mb-4">ML Engineer</p>
+            <div class="flex justify-center space-x-4 mb-4">
+                <a href="https://www.linkedin.com/in/mitesh-adake/" target="_blank" class="theme-text-secondary hover:theme-text-primary transition">
+                    <i class="fab fa-linkedin-in"></i>
                 </a>
-                <a href="https://github.com/mitadake" target="_blank" class="bg-gray-700 hover:bg-gray-600 rounded-full w-12 h-12 flex items-center justify-center transition duration-300 transform hover:scale-110">
-                    <i class="fab fa-github text-xl"></i>
+                <a href="https://github.com/mitadake" target="_blank" class="theme-text-secondary hover:theme-text-primary transition">
+                    <i class="fab fa-github"></i>
                 </a>
-                <a href="https://www.kaggle.com/miteshadake" target="_blank" class="bg-cyan-600 hover:bg-cyan-700 rounded-full w-12 h-12 flex items-center justify-center transition duration-300 transform hover:scale-110">
-                    <i class="fab fa-kaggle text-xl"></i>
+                <a href="https://www.kaggle.com/miteshadake" target="_blank" class="theme-text-secondary hover:theme-text-primary transition">
+                    <i class="fab fa-kaggle"></i>
                 </a>
             </div>
-            
-            <div class="border-t border-gray-700 pt-6">
-                <p class="text-gray-400">&copy; 2025 Mitesh Adake. Crafted with <span class="text-red-500">❤️</span> and <span class="text-blue-400">AI</span></p>
-                <p class="text-sm text-gray-500 mt-2">Exploring the intersection of Neural Networks, NLP, and Human Intelligence</p>
-            </div>
+            <p class="text-xs theme-text-secondary">&copy; 2026 Mitesh Adake</p>
         </div>
     </footer>
 
+    <!-- AI Agent Chat Widget -->
+    <button id="agent-fab" title="Ask AI Agent">
+        <i class="fas fa-robot"></i>
+    </button>
+
+    <div id="agent-panel">
+        <div id="agent-panel-header">
+            <div>
+                <span class="font-semibold text-sm theme-text-primary">Portfolio Agent</span>
+                <span class="text-xs theme-text-secondary ml-2" style="opacity:0.7">Runs in your browser</span>
+            </div>
+            <button id="agent-close" style="background:none;border:none;cursor:pointer;" class="theme-text-secondary">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="agent-messages"></div>
+        <div class="agent-chips" id="agent-chips"></div>
+        <div id="agent-input-area">
+            <input type="text" id="agent-input" placeholder="Ask about Mitesh..." autocomplete="off">
+            <button id="agent-send"><i class="fas fa-arrow-up"></i></button>
+        </div>
+    </div>
+
     <script>
-        // Email reveal functionality
         var e_is_shown = false;
         document.getElementById('iemail').addEventListener("click", function(){
             let demail = document.getElementById('demail');
@@ -706,45 +753,10 @@
             e_is_shown = !e_is_shown;
         });
 
-        // Matrix rain animation
-        const canvas = document.getElementById('matrix');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        const matrix = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%+-/~{[|`]}";
-        const matrixArray = matrix.split("");
-        const fontSize = 10;
-        const columns = canvas.width / fontSize;
-        const drops = [];
-        for (let x = 0; x < columns; x++) drops[x] = 1;
-
-        function draw() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#0f4';
-            ctx.font = fontSize + 'px monospace';
-
-            for (let i = 0; i < drops.length; i++) {
-                const text = matrixArray[Math.floor(Math.random() * matrixArray.length)];
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                drops[i]++;
-            }
-        }
-
-        setInterval(draw, 100);
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
-
-        // Theme Switching Functionality
         const themeToggle = document.getElementById('themeToggle');
         const themeIcon = document.getElementById('themeIcon');
         const body = document.body;
 
-        // Check for saved theme preference or default to light mode
         const savedTheme = localStorage.getItem('theme') || 'light';
         setTheme(savedTheme);
 
@@ -757,29 +769,15 @@
 
         function setTheme(theme) {
             body.setAttribute('data-theme', theme);
-            
             if (theme === 'dark') {
-                themeIcon.className = 'fas fa-sun text-xl theme-text-secondary';
+                themeIcon.className = 'fas fa-sun text-sm theme-text-secondary';
                 themeToggle.title = 'Switch to Light Mode';
             } else {
-                themeIcon.className = 'fas fa-moon text-xl theme-text-secondary';
+                themeIcon.className = 'fas fa-moon text-sm theme-text-secondary';
                 themeToggle.title = 'Switch to Dark Mode';
             }
         }
-
-        // Enhanced Matrix Animation for Dark Theme
-        function updateMatrixForTheme() {
-            const theme = body.getAttribute('data-theme');
-            if (theme === 'dark') {
-                canvas.style.opacity = '0.08';
-            } else {
-                canvas.style.opacity = '0.03';
-            }
-        }
-
-        // Update matrix when theme changes
-        const observer = new MutationObserver(updateMatrixForTheme);
-        observer.observe(body, { attributes: true, attributeFilter: ['data-theme'] });
     </script>
+    <script src="agent.js"></script>
 </body>
 </html>
