@@ -4,6 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mitesh Adake | ML Engineer</title>
+    <meta name="description" content="Mitesh Adake is an ML Engineer focused on NLP, LLMs, and applied AI. Explore experience at FedEx, featured projects, talks, and ways to connect.">
+    <meta name="keywords" content="Mitesh Adake, ML Engineer, NLP, LLM, Deep Learning, Portfolio, FedEx, USC">
+    <meta name="author" content="Mitesh Adake">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://mitadake.github.io/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Mitesh Adake | ML Engineer">
+    <meta property="og:description" content="Portfolio of Mitesh Adake: ML Engineer working on NLP, LLMs, and applied AI projects.">
+    <meta property="og:url" content="https://mitadake.github.io/">
+    <meta property="og:image" content="https://mitadake.github.io/assets/Mitesh_Adake_Photo.jpeg">
+    <meta property="og:site_name" content="Mitesh Adake Portfolio">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Mitesh Adake | ML Engineer">
+    <meta name="twitter:description" content="Portfolio of Mitesh Adake: ML Engineer focused on NLP, LLMs, and AI systems.">
+    <meta name="twitter:image" content="https://mitadake.github.io/assets/Mitesh_Adake_Photo.jpeg">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Mitesh Adake",
+      "url": "https://mitadake.github.io/",
+      "image": "https://mitadake.github.io/assets/Mitesh_Adake_Photo.jpeg",
+      "jobTitle": "ML Engineer",
+      "sameAs": [
+        "https://www.linkedin.com/in/mitesh-adake/",
+        "https://github.com/mitadake",
+        "https://www.kaggle.com/miteshadake"
+      ],
+      "alumniOf": [
+        {
+          "@type": "CollegeOrUniversity",
+          "name": "University of Southern California"
+        },
+        {
+          "@type": "CollegeOrUniversity",
+          "name": "Pune Institute of Computer Technology"
+        }
+      ]
+    }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="shortcut icon" type="image/jpg" href="assets/favic.png"/>
@@ -304,6 +347,9 @@
                         <button id="iemail" class="text-gray-300 hover:text-white transition w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-white/40">
                             <i class="fas fa-envelope"></i>
                         </button>
+                        <a href="https://calendly.com/miteshadake" target="_blank" class="text-gray-300 hover:text-white transition w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-white/40" title="Schedule a call">
+                            <i class="fas fa-calendar-alt"></i>
+                        </a>
                     </div>
                     <div id="demail" class="text-sm opacity-0 transition-opacity duration-500 text-gray-300 font-mono"></div>
                     <div class="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
@@ -678,7 +724,7 @@
                     <ul class="space-y-3 text-sm theme-text-secondary">
                         <li class="flex items-start gap-2">
                             <i class="fas fa-chess mt-1 text-xs"></i>
-                            <span>Chess Player</span>
+                            <span>Chess Player (<a href="https://ratings.uschess.org/player/32473707" target="_blank" class="text-blue-400 underline hover:text-blue-300">US Chess Rating</a>)</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <i class="fas fa-futbol mt-1 text-xs"></i>
@@ -689,6 +735,14 @@
                             <span>Active in Kaggle ML competitions</span>
                         </li>
                     </ul>
+                    <div class="flex flex-wrap gap-3 mt-4">
+                        <a href="https://www.kaggle.com/competitions/open-problems-single-cell-perturbations" target="_blank">
+                            <img src="assets/Mitesh Adake - Open Problems – Single-Cell Perturbations.png" alt="Kaggle - Open Problems Single-Cell Perturbations" class="h-16 rounded hover:opacity-80 transition">
+                        </a>
+                        <a href="https://www.kaggle.com/competitions/kaggle-llm-science-exam" target="_blank">
+                            <img src="assets/Mitesh Adake - Kaggle - LLM Science Exam.png" alt="Kaggle - LLM Science Exam" class="h-16 rounded hover:opacity-80 transition">
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -748,8 +802,28 @@
         var e_is_shown = false;
         document.getElementById('iemail').addEventListener("click", function(){
             let demail = document.getElementById('demail');
-            demail.innerHTML = '<i class="fas fa-envelope mr-2"></i>miteshadake29@gmail.com';
             demail.style.opacity = e_is_shown ? 0 : 1;
+            if (!e_is_shown) {
+                demail.innerHTML = '<span><i class="fas fa-envelope mr-2"></i>miteshadake29@gmail.com</span><button id="copy-email-btn" type="button" class="ml-3 text-xs px-2 py-1 rounded border border-white/30 hover:border-white/60 transition">Copy</button>';
+                const copyBtn = document.getElementById('copy-email-btn');
+                const emailAddress = 'miteshadake29@gmail.com';
+                copyBtn.addEventListener('click', async function () {
+                    try {
+                        await navigator.clipboard.writeText(emailAddress);
+                    } catch (err) {
+                        const tempInput = document.createElement('input');
+                        tempInput.value = emailAddress;
+                        document.body.appendChild(tempInput);
+                        tempInput.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(tempInput);
+                    }
+                    copyBtn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyBtn.textContent = 'Copy';
+                    }, 1400);
+                });
+            }
             e_is_shown = !e_is_shown;
         });
 

@@ -153,10 +153,13 @@ const DEFAULT_CHIPS = [
   "Tell me about the FedEx roles",
   "What NLP skills does he have?",
   "Show me his education",
-  "What projects has he built?"
+  "What projects has he built?",
+  "Schedule a call with Mitesh"
 ];
 
 const SIMILARITY_THRESHOLD = 0.1;
+const CALL_SCHEDULING_URL = 'https://calendly.com/miteshadake';
+const CALL_INTENT_PATTERN = /\b(schedule|book|set up|setup|arrange)\b.*\b(call|meeting|chat)\b|\bcall\b.*\b(schedule|book|meeting)\b/i;
 
 // ── State ───────────────────────────────────────────────────────────────────
 let extractor = null;
@@ -220,7 +223,7 @@ function togglePanel() {
   panel.classList.toggle('open', panelOpen);
   if (panelOpen && firstOpen) {
     firstOpen = false;
-    addBotMessage('Hi! I\'m an AI agent running <strong>entirely in your browser</strong> using a transformer embedding model. Ask me anything about Mitesh\'s experience, skills, or projects.');
+    addBotMessage('Hi! I\'m an AI agent running <strong>entirely in your browser</strong> using a small transformers embedding model. Ask me anything about Mitesh\'s experience, skills, or projects. Note: I may not always provide accurate information.');
     showChips(DEFAULT_CHIPS);
     initModel();
   }
@@ -290,7 +293,8 @@ async function initModel() {
     const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1/dist/transformers.min.js');
     removeLastBotMessage();
     addBotMessage('<i class="fas fa-cog fa-spin" style="margin-right:6px"></i>Initializing embedding model...');
-    extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
+    // extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
+    extractor = await pipeline('feature-extraction', 'Xenova/bge-small-en-v1.5', {
       dtype: 'q8',
     });
     removeLastBotMessage();
@@ -320,6 +324,14 @@ async function handleQuery(text) {
 
   if (!extractor || !kbEmbeddings) {
     addBotMessage('The model is still loading. Please wait a moment and try again.');
+    return;
+  }
+
+  if (CALL_INTENT_PATTERN.test(text)) {
+    addBotMessage(
+      `Absolutely - you can schedule a call here: <a href="${CALL_SCHEDULING_URL}" target="_blank" class="text-blue-400 underline hover:text-blue-300">Schedule a call</a>. You can also message on <a href="https://www.linkedin.com/in/mitesh-adake/" target="_blank" class="text-blue-400 underline hover:text-blue-300">LinkedIn</a>.`
+    );
+    showChips(['What is his experience?', 'What projects has he built?', 'What NLP skills does he have?']);
     return;
   }
 
