@@ -338,6 +338,76 @@
             height: 1px;
             background: var(--border-color);
         }
+        
+        /* Neural Network Theme */
+        .neural-bg {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .neural-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        @keyframes neuron-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+        
+        .project-glow {
+            position: relative;
+        }
+        
+        .project-glow::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.3), rgba(59, 130, 246, 0.3));
+            border-radius: inherit;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            filter: blur(8px);
+        }
+        
+        .project-glow:hover::before {
+            opacity: 1;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        @keyframes float-particle {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0.4; }
+            25% { transform: translateY(-10px) translateX(5px); opacity: 0.7; }
+            50% { transform: translateY(-5px) translateX(-5px); opacity: 0.5; }
+            75% { transform: translateY(-15px) translateX(3px); opacity: 0.6; }
+        }
+        
+        .floating-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.6);
+            animation: float-particle 6s ease-in-out infinite;
+            pointer-events: none;
+        }
 
         /* ── Scroll-reveal animations for Experience & Education ─── */
         @keyframes scroll-fade-up {
@@ -788,7 +858,13 @@
     </button>
 
     <!-- Hero -->
-    <header class="hero-bg text-white py-20">
+    <header class="hero-bg text-white py-20 neural-bg">
+        <!-- Floating Neural Particles -->
+        <div class="floating-particle" style="top: 15%; left: 10%; animation-delay: 0s;"></div>
+        <div class="floating-particle" style="top: 25%; left: 85%; animation-delay: 1s;"></div>
+        <div class="floating-particle" style="top: 60%; left: 5%; animation-delay: 2s;"></div>
+        <div class="floating-particle" style="top: 70%; left: 90%; animation-delay: 0.5s;"></div>
+        <div class="floating-particle" style="top: 40%; left: 50%; animation-delay: 1.5s;"></div>
         <div class="container mx-auto px-4 max-w-4xl relative z-10">
             <div class="flex flex-col md:flex-row items-center gap-10">
                 <div class="shrink-0 hero-animate hero-photo-wrap" style="--ha-delay: 0s;">
@@ -838,7 +914,7 @@
     <!-- Experience & Education -->
     <section class="py-16">
         <div class="container mx-auto px-4 max-w-6xl">
-            <h2 class="text-2xl font-bold mb-10 theme-text-primary">Experience &amp; Education</h2>
+            <h2 class="text-2xl font-bold mb-10 gradient-text">Experience &amp; Education</h2>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-14 items-start">
                 <!-- Work experience column -->
@@ -1067,7 +1143,7 @@
     <!-- Talks -->
     <section class="py-16" id="section-talks">
         <div class="container mx-auto px-4 max-w-4xl">
-            <h2 class="text-2xl font-bold mb-12 theme-text-primary">Talks</h2>
+            <h2 class="text-2xl font-bold mb-12 gradient-text">Talks</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <a href="https://youtu.be/zfrjzpVkrRA?t=4093" target="_blank" class="theme-card rounded-lg overflow-hidden border card-hover">
@@ -1100,13 +1176,58 @@
     <hr class="section-divider max-w-4xl mx-auto">
 
     <!-- Projects -->
-    <section class="py-16" id="section-projects">
+    <section class="py-16 neural-bg" id="section-projects">
         <div class="container mx-auto px-4 max-w-6xl">
-            <h2 class="text-2xl font-bold mb-12 theme-text-primary">Projects</h2>
+            <h2 class="text-2xl font-bold mb-12 gradient-text">Projects</h2>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                <!-- GGUF k-quant Content-Injection Attack (Featured) -->
+                <div class="p-7 rounded-lg border theme-card project-glow shimmer-effect col-span-1 md:col-span-2" id="proj-gguf-attack">
+                    <div class="flex flex-col lg:flex-row gap-6">
+                        <div class="lg:w-1/2">
+                            <img src="assets/gguf_attack_pipeline.png" alt="GGUF k-quant Attack Pipeline" class="w-full h-auto object-contain rounded mb-4 p-3" style="background: var(--bg-primary);">
+                        </div>
+                        <div class="lg:w-1/2">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="tech-tag bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">Featured Research</span>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2 theme-text-primary">GGUF k-quant Content-Injection Attack</h3>
+                            <p class="text-base theme-text-secondary mb-4">Researched and built a novel quantization attack for LLMs: models stay benign under full-precision (FP) inference but become malicious after GGUF k-quantization. Demonstrated that safety at FP does not guarantee safety post-quantization.</p>
+                            
+                            <div class="mb-4 p-4 rounded-lg transformer-accent">
+                                <h4 class="text-sm font-semibold theme-text-primary mb-2"><i class="fas fa-chart-bar mr-1"></i> Key Results:</h4>
+                                <ul class="text-sm theme-text-secondary space-y-1">
+                                    <li><span class="font-medium text-emerald-500">Q4_K_M:</span> ASR up to 82-83% (FP ASR: 0-3%)</li>
+                                    <li><span class="font-medium text-amber-500">Other quants (Q2-Q6):</span> 38-68% quantized ASR with 2-18% FP ASR</li>
+                                    <li><span class="font-medium">Models:</span> Llama-3.2-1B-Instruct, Qwen2.5-1.5B-Instruct</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="flex flex-wrap gap-1 mb-4">
+                                <span class="tech-tag">LLM Security</span>
+                                <span class="tech-tag">Quantization</span>
+                                <span class="tech-tag">GGUF</span>
+                                <span class="tech-tag">Adversarial ML</span>
+                                <span class="tech-tag">PyTorch</span>
+                                <span class="tech-tag">LoRA</span>
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <a href="https://github.com/mitadake/gguf_k_quant_attack" target="_blank" class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded text-sm font-medium hover:from-indigo-700 hover:to-purple-700 transition flex items-center gap-2">
+                                    <i class="fab fa-github"></i>GitHub
+                                </a>
+                                <span class="text-xs theme-text-secondary flex items-center">
+                                    <i class="fas fa-flask mr-1"></i>Fast-Hack Research
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- TokenGen -->
                 <div class="p-7 rounded-lg border theme-card" id="proj-tokengen">
-                    <img src="assets/prob_timeline.png" alt="TokenGen" class="w-full h-64 object-contain rounded mb-4 p-3" style="background: var(--bg-primary);">
+                    <img src="assets/prob_timeline.png" alt="TokenGen" class="w-full h-64 object-contain rounded mb-4 p-3 project-img-wrapper" style="background: var(--bg-primary);">
                     <h3 class="text-lg font-semibold mb-2 theme-text-primary">TokenGen</h3>
                     <p class="text-base theme-text-secondary mb-4">Visualization tool to identify layer-wise token evolution patterns across 12+ transformer layers for GPT-2 and OPT models.</p>
                     <div class="flex flex-wrap gap-1 mb-3">
@@ -1116,7 +1237,7 @@
                         <span class="tech-tag">UMAP</span>
                     </div>
                     <div class="flex gap-2">
-                        <a href="https://tokengen.streamlit.app/" target="_blank" class="px-4 py-2 bg-gray-800 text-white rounded text-base hover:bg-gray-700 transition">Website</a>
+                        <a href="https://tokengen.streamlit.app/" target="_blank" class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded text-base hover:from-indigo-700 hover:to-purple-700 transition btn-ripple shadow-lg hover:shadow-xl">Website</a>
                         <a href="https://github.com/mitadake/tokengen" target="_blank" class="project-btn-outline px-4 py-2 border rounded text-base transition theme-text-primary" style="border-color: var(--border-color);">
                             <i class="fab fa-github mr-1"></i>GitHub
                         </a>
@@ -1135,7 +1256,7 @@
 
                 <!-- AnyToken -->
                 <div class="p-7 rounded-lg border theme-card" id="proj-anytoken">
-                    <img src="assets/anytoken.png" alt="AnyToken" class="w-full h-64 object-contain rounded mb-4 p-3" style="background: var(--bg-primary);">
+                    <img src="assets/anytoken.png" alt="AnyToken" class="w-full h-64 object-contain rounded mb-4 p-3 project-img-wrapper" style="background: var(--bg-primary);">
                     <h3 class="text-lg font-semibold mb-2 theme-text-primary">AnyToken</h3>
                     <p class="text-base theme-text-secondary mb-4">Interactive HuggingFace tokenizer visualization tool</p>
                     <div class="flex gap-2">
@@ -1146,7 +1267,7 @@
 
                 <!-- PriceNet -->
                 <div class="p-7 rounded-lg border theme-card" id="proj-pricenet">
-                    <img src="assets/stockpriceproject.png" alt="PriceNet" class="w-full h-64 object-contain rounded mb-4 p-3" style="background: var(--bg-primary);">
+                    <img src="assets/stockpriceproject.png" alt="PriceNet" class="w-full h-64 object-contain rounded mb-4 p-3 project-img-wrapper" style="background: var(--bg-primary);">
                     <h3 class="text-lg font-semibold mb-2 theme-text-primary">PriceNet</h3>
                     <p class="text-base theme-text-secondary mb-4">Stock price prediction using Llama and Gemini for explainable financial time series forecasting</p>
                     <div class="flex flex-wrap gap-1">
@@ -1158,7 +1279,7 @@
 
                 <!-- Phishing Detection -->
                 <div class="p-7 rounded-lg border theme-card" id="proj-phishing">
-                    <img src="assets/phish_logo.png" alt="Phishing Detection" class="w-full h-64 object-contain rounded mb-4 p-3" style="background: var(--bg-primary);">
+                    <img src="assets/phish_logo.png" alt="Phishing Detection" class="w-full h-64 object-contain rounded mb-4 p-3 project-img-wrapper" style="background: var(--bg-primary);">
                     <h3 class="text-lg font-semibold mb-2 theme-text-primary">Real-time Phishing Detection</h3>
                     <p class="text-base theme-text-secondary mb-4">Production ML models with Edge browser extension. Built during B.E. at PICT, Pune (undergraduate).</p>
                     <div class="flex gap-2">
@@ -1169,7 +1290,7 @@
 
                 <!-- Object Detection -->
                 <div class="p-7 rounded-lg border theme-card" id="proj-objdet">
-                    <img src="assets/obj_det.png" alt="Object Detection" class="w-full h-64 object-contain rounded mb-4 p-3" style="background: var(--bg-primary);">
+                    <img src="assets/obj_det.png" alt="Object Detection" class="w-full h-64 object-contain rounded mb-4 p-3 project-img-wrapper" style="background: var(--bg-primary);">
                     <h3 class="text-lg font-semibold mb-2 theme-text-primary">Real-time Object Detection</h3>
                     <p class="text-base theme-text-secondary mb-4">High-performance computer vision system. Built during B.E. at PICT, Pune (undergraduate).</p>
                     <a href="https://github.com/Mit-byte/PBL-2-Project" target="_blank" class="project-btn-outline px-4 py-2 border rounded text-base transition theme-text-primary" style="border-color: var(--border-color);">GitHub</a>
@@ -1183,7 +1304,7 @@
     <!-- Beyond the Code -->
     <section class="py-16" id="section-beyond">
         <div class="container mx-auto px-4 max-w-4xl">
-            <h2 class="text-2xl font-bold mb-12 theme-text-primary">Beyond the Code</h2>
+            <h2 class="text-2xl font-bold mb-12 gradient-text">Beyond the Code</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="p-6 rounded-lg border theme-card" id="section-community">
