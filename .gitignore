@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Env / secrets (NEVER commit real API keys)
+.env
+.env.*
+!.env.example
+proxy/.dev.vars
+
+# Cloudflare / wrangler
+.wrangler/
+
+# OS / editor
+.DS_Store
+Thumbs.db

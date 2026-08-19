@@ -1,0 +1,14 @@
+{
+  "name": "mitadake-portfolio-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build tooling for the portfolio AI agent (offline KB embedding generation).",
+  "type": "module",
+  "scripts": {
+    "build:embeddings": "node scripts/build-embeddings.mjs",
+    "extract:kb": "node scripts/extract-kb.mjs"
+  },
+  "devDependencies": {
+    "@huggingface/transformers": "^4.0.1"
+  }
+}

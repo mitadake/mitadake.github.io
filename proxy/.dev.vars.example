@@ -1,0 +1,4 @@
+# Copy to `.dev.vars` for local `wrangler dev`. Never commit the real key.
+OLLAMA_API_KEY=your_ollama_api_key_here
+# Optional: comma-separated list of allowed origins
+# ALLOWED_ORIGINS=https://mitadake.github.io,http://localhost:8000

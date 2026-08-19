@@ -51,39 +51,317 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="shortcut icon" type="image/jpg" href="assets/favic.png"/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
+        html { scroll-behavior: smooth; }
+
         * { font-family: 'Inter', sans-serif; }
 
         :root {
-            --bg-primary: #fafafa;
+            --bg-primary: #f8fafc;
             --bg-secondary: #ffffff;
-            --text-primary: #1a1a1a;
-            --text-secondary: #6b7280;
-            --border-color: #e5e7eb;
-            --accent: #475569;
-            --accent-light: #f1f5f9;
+            --bg-elevated: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --accent: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-light: #eef2ff;
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --nav-height: 64px;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --shadow-soft: 0 4px 24px -4px rgba(15, 23, 42, 0.08);
+            --shadow-card: 0 12px 40px -12px rgba(15, 23, 42, 0.12);
         }
 
         [data-theme="dark"] {
-            --bg-primary: #111111;
-            --bg-secondary: #1a1a1a;
-            --text-primary: #f5f5f5;
-            --text-secondary: #a1a1aa;
-            --border-color: #2a2a2a;
-            --accent: #94a3b8;
-            --accent-light: #1e293b;
+            --bg-primary: #0b0f17;
+            --bg-secondary: #111827;
+            --bg-elevated: #1a2234;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #1e293b;
+            --accent: #818cf8;
+            --accent-secondary: #a78bfa;
+            --accent-light: #1e1b4b;
+            --accent-glow: rgba(129, 140, 248, 0.2);
+            --shadow-soft: 0 4px 24px -4px rgba(0, 0, 0, 0.35);
+            --shadow-card: 0 12px 40px -12px rgba(0, 0, 0, 0.45);
         }
 
         body {
             background-color: var(--bg-primary);
             color: var(--text-primary);
             transition: background-color 0.3s ease, color 0.3s ease;
+            line-height: 1.6;
+        }
+
+        ::selection {
+            background: color-mix(in srgb, var(--accent) 35%, transparent);
+            color: var(--text-primary);
+        }
+
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .content-link {
+            color: var(--accent);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            transition: opacity 0.2s ease;
+        }
+
+        .content-link:hover { opacity: 0.85; }
+
+        /* ── Skip link & scroll progress ── */
+        .skip-link {
+            position: absolute;
+            left: -9999px;
+            top: 12px;
+            z-index: 2000;
+            padding: 8px 16px;
+            background: var(--accent);
+            color: white;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .skip-link:focus {
+            left: 12px;
+        }
+
+        #scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+            z-index: 1100;
+            transition: width 0.1s linear;
+        }
+
+        /* ── Navigation ── */
+        .site-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.25rem;
+            background: rgba(248, 250, 252, 0.72);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid transparent;
+            transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        [data-theme="dark"] .site-nav {
+            background: rgba(11, 15, 23, 0.78);
+        }
+
+        .site-nav.scrolled {
+            border-bottom-color: var(--border-color);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .nav-brand {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: 1.125rem;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: none;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        @media (min-width: 768px) {
+            .nav-links { display: flex; }
+        }
+
+        .nav-link {
+            padding: 0.5rem 0.875rem;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 999px;
+            transition: color 0.2s ease, background 0.2s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--text-primary);
+            background: var(--accent-light);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-menu-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        @media (min-width: 768px) {
+            .nav-menu-btn { display: none; }
+        }
+
+        .nav-mobile-menu {
+            display: none;
+            position: fixed;
+            top: var(--nav-height);
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-soft);
+            z-index: 999;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .nav-mobile-menu.open { display: flex; }
+
+        .nav-mobile-menu .nav-link {
+            display: block;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+        }
+
+        .theme-toggle {
+            position: static;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.05);
+            border-color: var(--accent);
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            border-radius: 999px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+            box-shadow: 0 4px 14px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--accent-glow);
+        }
+
+        .btn-ghost {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .btn-ghost:hover {
+            background: var(--accent-light);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .section-block {
+            padding: 5rem 0;
+        }
+
+        .section-block.alt-bg {
+            background: var(--bg-secondary);
+        }
+
+        .section-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .section-label {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: clamp(1.75rem, 4vw, 2.25rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+        }
+
+        .section-subtitle {
+            margin-top: 0.75rem;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 36rem;
         }
 
         .theme-card {
-            background-color: var(--bg-secondary);
+            background-color: var(--bg-elevated);
             border-color: var(--border-color);
+            border-radius: var(--radius-lg);
             transition:
                 background-color 0.3s ease,
                 border-color 0.3s ease,
@@ -92,48 +370,23 @@
         }
 
         .theme-card:hover {
-            transform: translateY(-6px) scale(1.015);
-            box-shadow:
-                0 14px 28px -6px rgba(0, 0, 0, 0.12),
-                0 6px 12px -4px rgba(0, 0, 0, 0.08);
-            border-color: var(--accent);
-        }
-
-        [data-theme="dark"] .theme-card:hover {
-            box-shadow:
-                0 14px 28px -6px rgba(0, 0, 0, 0.4),
-                0 6px 12px -4px rgba(0, 0, 0, 0.25);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-card);
+            border-color: color-mix(in srgb, var(--accent) 35%, var(--border-color));
         }
 
         .theme-text-secondary { color: var(--text-secondary); }
         .theme-text-primary { color: var(--text-primary); }
 
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .theme-toggle:hover {
-            transform: scale(1.05);
-        }
-
-        /* Landing hero — engaging motion (respects prefers-reduced-motion below) */
+        /* Landing hero */
         .hero-bg {
             position: relative;
             overflow: hidden;
-            background: linear-gradient(125deg, #12121a 0%, #1a1a24 40%, #15151f 100%);
+            min-height: calc(100vh - var(--nav-height));
+            margin-top: var(--nav-height);
+            display: flex;
+            align-items: center;
+            background: linear-gradient(145deg, #0c0c14 0%, #14141f 45%, #0f1018 100%);
             background-size: 200% 200%;
             animation: hero-bg-shift 22s ease-in-out infinite;
         }
@@ -253,9 +506,101 @@
             animation-delay: calc(var(--ha-delay, 0s) + 0.55s);
         }
 
+        .hero-role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.875rem;
+            margin-bottom: 1rem;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            backdrop-filter: blur(8px);
+        }
+
+        .hero-role-badge .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #34d399;
+            box-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
+            animation: status-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes status-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .hero-cta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .hero-cta-row { justify-content: flex-start; }
+        }
+
+        .hero-social-link {
+            color: rgba(255, 255, 255, 0.75);
+            transition: color 0.2s ease, transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .hero-social-link:hover {
+            color: white;
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.35);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-scroll-hint {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 0.6875rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            animation: hero-scroll-bob 2.5s ease-in-out infinite;
+        }
+
+        .hero-scroll-hint i { font-size: 0.875rem; }
+
+        @keyframes hero-scroll-bob {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(6px); }
+        }
+
         .hero-skill-tag {
             opacity: 0;
             animation: hero-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.12);
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .hero-skill-tag:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.25);
         }
 
         .hero-skill-tag:nth-child(1) { animation-delay: 0.42s; }
@@ -296,6 +641,12 @@
                 opacity: 1;
                 animation: none;
             }
+            .hero-scroll-hint {
+                animation: none;
+            }
+            .hero-role-badge .status-dot {
+                animation: none;
+            }
         }
 
         .card-hover {
@@ -319,24 +670,175 @@
         .tech-tag {
             background: var(--accent-light);
             color: var(--accent);
-            border: 1px solid var(--border-color);
-            padding: 3px 10px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 500;
+            border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border-color));
+            padding: 4px 11px;
+            border-radius: 999px;
+            font-size: 0.6875rem;
+            font-weight: 600;
             display: inline-block;
             margin: 2px;
+            letter-spacing: 0.01em;
         }
 
-        .project-btn-outline:hover {
+        .timeline-icon {
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary)) !important;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .project-btn-outline:hover,
+        .btn-secondary:hover {
             background: var(--accent-light);
             border-color: var(--accent) !important;
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .project-img-wrapper {
+            border-radius: var(--radius-md);
+            transition: transform 0.35s ease;
+        }
+
+        .theme-card:hover .project-img-wrapper {
+            transform: scale(1.02);
+        }
+
+        .transformer-accent {
+            background: var(--accent-light);
+            border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border-color));
         }
 
         .section-divider {
             border: none;
             height: 1px;
-            background: var(--border-color);
+            background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+            max-width: 48rem;
+            margin: 0 auto;
+        }
+        
+        /* Neural Network Theme */
+        .neural-bg {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .neural-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        @keyframes neuron-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+        
+        .project-glow {
+            position: relative;
+        }
+        
+        .project-glow::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.3), rgba(59, 130, 246, 0.3));
+            border-radius: inherit;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            filter: blur(8px);
+        }
+        
+        .project-glow:hover::before {
+            opacity: 1;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary), #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .fade-in-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #back-to-top {
+            position: fixed;
+            bottom: 100px;
+            left: 24px;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-soft);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(8px);
+            transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s ease;
+            z-index: 850;
+        }
+
+        #back-to-top.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        #back-to-top:hover {
+            background: var(--accent-light);
+            border-color: var(--accent);
+        }
+        
+        @keyframes float-particle {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0.4; }
+            25% { transform: translateY(-10px) translateX(5px); opacity: 0.7; }
+            50% { transform: translateY(-5px) translateX(-5px); opacity: 0.5; }
+            75% { transform: translateY(-15px) translateX(3px); opacity: 0.6; }
+        }
+        
+        .floating-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.6);
+            animation: float-particle 6s ease-in-out infinite;
+            pointer-events: none;
         }
         
         /* Neural Network Theme */
@@ -659,15 +1161,15 @@
             width: 58px;
             height: 58px;
             border-radius: 50%;
-            background: var(--text-primary);
-            color: var(--bg-primary);
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            color: white;
             border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.22);
-            transition: transform 0.2s ease, background 0.3s ease, color 0.3s ease, box-shadow 0.2s ease;
+            box-shadow: 0 6px 20px var(--accent-glow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             animation: agent-fab-attention 2.8s ease-in-out infinite;
         }
         #agent-fab i {
@@ -719,12 +1221,12 @@
             bottom: 94px;
             right: 24px;
             z-index: 901;
-            width: 360px;
-            max-height: 480px;
-            border-radius: 12px;
+            width: 380px;
+            max-height: 520px;
+            border-radius: var(--radius-lg);
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+            box-shadow: var(--shadow-card);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -769,12 +1271,14 @@
             align-self: flex-start;
             background: var(--accent-light);
             color: var(--text-primary);
-            border: 1px solid var(--border-color);
+            border: 1px solid color-mix(in srgb, var(--accent) 15%, var(--border-color));
+            border-radius: 14px 14px 14px 4px;
         }
         .agent-msg.user {
             align-self: flex-end;
-            background: var(--text-primary);
-            color: var(--bg-primary);
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            color: white;
+            border-radius: 14px 14px 4px 14px;
         }
 
         .agent-msg .view-link {
@@ -830,16 +1334,42 @@
             border-color: var(--accent);
         }
         #agent-send {
-            background: var(--text-primary);
-            color: var(--bg-primary);
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            color: white;
             border: none;
-            border-radius: 8px;
-            padding: 6px 12px;
+            border-radius: 10px;
+            padding: 8px 14px;
             cursor: pointer;
             font-size: 0.8125rem;
-            transition: background 0.15s;
+            transition: opacity 0.15s, transform 0.15s;
         }
-        #agent-send:hover { opacity: 0.8; }
+        #agent-send:hover { opacity: 0.9; transform: scale(1.05); }
+
+        .site-footer {
+            padding: 3rem 0;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+
+        .footer-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            border-radius: 999px;
+            text-decoration: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .footer-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--accent-glow);
+        }
 
         @media (max-width: 420px) {
             #agent-panel {
@@ -853,50 +1383,90 @@
     </style>
 </head>
 <body>
-    <button class="theme-toggle" id="themeToggle" title="Toggle Dark/Light Mode">
-        <i class="fas fa-moon text-sm theme-text-secondary" id="themeIcon"></i>
-    </button>
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <div id="scroll-progress" aria-hidden="true"></div>
 
+    <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+        <a href="#" class="nav-brand" aria-label="Mitesh Adake home">Mitesh Adake</a>
+        <div class="nav-links" role="navigation">
+            <a href="#section-experience" class="nav-link">Experience</a>
+            <a href="#section-talks" class="nav-link">Talks</a>
+            <a href="#section-projects" class="nav-link">Projects</a>
+            <a href="#section-beyond" class="nav-link">Beyond</a>
+        </div>
+        <div class="nav-actions">
+            <button class="theme-toggle" id="themeToggle" title="Toggle Dark/Light Mode" aria-label="Toggle theme">
+                <i class="fas fa-moon text-sm theme-text-secondary" id="themeIcon"></i>
+            </button>
+            <button class="nav-menu-btn" id="navMenuBtn" aria-label="Open menu" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="nav-mobile-menu" id="navMobileMenu" aria-hidden="true">
+        <a href="#section-experience" class="nav-link">Experience</a>
+        <a href="#section-talks" class="nav-link">Talks</a>
+        <a href="#section-projects" class="nav-link">Projects</a>
+        <a href="#section-beyond" class="nav-link">Beyond</a>
+    </div>
+
+    <main id="main-content">
     <!-- Hero -->
-    <header class="hero-bg text-white py-20 neural-bg">
+    <header class="hero-bg text-white neural-bg">
         <!-- Floating Neural Particles -->
         <div class="floating-particle" style="top: 15%; left: 10%; animation-delay: 0s;"></div>
         <div class="floating-particle" style="top: 25%; left: 85%; animation-delay: 1s;"></div>
         <div class="floating-particle" style="top: 60%; left: 5%; animation-delay: 2s;"></div>
         <div class="floating-particle" style="top: 70%; left: 90%; animation-delay: 0.5s;"></div>
         <div class="floating-particle" style="top: 40%; left: 50%; animation-delay: 1.5s;"></div>
-        <div class="container mx-auto px-4 max-w-4xl relative z-10">
-            <div class="flex flex-col md:flex-row items-center gap-10">
+        <div class="container mx-auto px-4 max-w-5xl relative z-10 py-16 md:py-20">
+            <div class="flex flex-col md:flex-row items-center gap-12 md:gap-14">
                 <div class="shrink-0 hero-animate hero-photo-wrap" style="--ha-delay: 0s;">
-                    <img src="assets/Mitesh_Adake_Photo.jpeg" alt="Mitesh Adake" class="hero-photo-img rounded-full w-44 h-44 object-cover border-2 border-white/20">
+                    <img src="assets/Mitesh_Adake_Photo.jpeg" alt="Mitesh Adake" class="hero-photo-img rounded-full w-40 h-40 md:w-48 md:h-48 object-cover border-2 border-white/25 shadow-2xl">
                 </div>
-                <div class="text-center md:text-left">
-                    <h1 class="hero-animate text-4xl md:text-5xl font-bold mb-2 tracking-tight" style="--ha-delay: 0.1s;">Mitesh Adake</h1>
-                    <p class="text-lg text-gray-300 mb-6 hero-animate" style="--ha-delay: 0.22s;">
+                <div class="text-center md:text-left flex-1">
+                    <div class="hero-animate hero-role-badge" style="--ha-delay: 0.08s;">
+                        <span class="status-dot" aria-hidden="true"></span>
+                        ML Engineer &middot; FedEx
+                    </div>
+                    <h1 class="hero-animate text-4xl md:text-5xl lg:text-6xl font-bold mb-3 tracking-tight" style="--ha-delay: 0.12s; font-family: 'Plus Jakarta Sans', sans-serif;">Mitesh Adake</h1>
+                    <p class="text-lg md:text-xl text-gray-300 mb-2 hero-animate max-w-xl" style="--ha-delay: 0.22s;">
                         <span class="hero-tagline-line">I work with data and train Neural Networks.</span>
                     </p>
-                    <div class="hero-animate flex justify-center md:justify-start space-x-3 mb-6" style="--ha-delay: 0.34s;">
-                        <a href="https://www.linkedin.com/in/mitesh-adake/" target="_blank" class="text-gray-300 hover:text-white transition w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-white/40">
+                    <p class="text-sm text-gray-400 hero-animate max-w-lg" style="--ha-delay: 0.28s;">
+                        NLP, LLMs, and applied AI &mdash; from research to production systems.
+                    </p>
+                    <div class="hero-animate hero-cta-row" style="--ha-delay: 0.36s;">
+                        <a href="#section-projects" class="btn-primary">
+                            <i class="fas fa-folder-open"></i> View Projects
+                        </a>
+                        <a href="assets/Resume__Mitesh__Adake.pdf" target="_blank" rel="noopener noreferrer" class="btn-ghost" style="color: white; border-color: rgba(255,255,255,0.25);">
+                            <i class="fas fa-file-pdf"></i> Resume
+                        </a>
+                        <button type="button" id="hero-chat-btn" class="btn-ghost" style="color: white; border-color: rgba(255,255,255,0.25);">
+                            <i class="fas fa-comment-dots"></i> Chat
+                        </button>
+                    </div>
+                    <div class="hero-animate flex justify-center md:justify-start gap-2.5 mt-6" style="--ha-delay: 0.44s;">
+                        <a href="https://www.linkedin.com/in/mitesh-adake/" target="_blank" rel="noopener noreferrer" class="hero-social-link" aria-label="LinkedIn">
                             <i class="fab fa-linkedin-in"></i>
                         </a>
-                        <a href="https://github.com/mitadake" target="_blank" class="text-gray-300 hover:text-white transition w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-white/40">
+                        <a href="https://github.com/mitadake" target="_blank" rel="noopener noreferrer" class="hero-social-link" aria-label="GitHub">
                             <i class="fab fa-github"></i>
                         </a>
-                        <a href="https://www.kaggle.com/miteshadake" target="_blank" class="text-gray-300 hover:text-white transition w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-white/40">
+                        <a href="https://www.kaggle.com/miteshadake" target="_blank" rel="noopener noreferrer" class="hero-social-link" aria-label="Kaggle">
                             <i class="fab fa-kaggle"></i>
                         </a>
-                        <button id="iemail" class="text-gray-300 hover:text-white transition w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-white/40">
+                        <button id="iemail" class="hero-social-link" aria-label="Show email">
                             <i class="fas fa-envelope"></i>
                         </button>
-                        <a href="https://calendly.com/miteshadake" target="_blank" class="text-gray-300 hover:text-white transition w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-white/40" title="Schedule a call">
+                        <a href="https://calendly.com/miteshadake" target="_blank" rel="noopener noreferrer" class="hero-social-link" title="Schedule a call" aria-label="Schedule a call">
                             <i class="fas fa-calendar-alt"></i>
                         </a>
-                        <a href="assets/Resume__Mitesh__Adake.pdf" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-white transition w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-white/40" title="Resume (PDF)">
-                            <i class="fas fa-file-pdf"></i>
-                        </a>
                     </div>
-                    <div id="demail" class="text-sm opacity-0 transition-opacity duration-500 text-gray-300 font-mono"></div>
-                    <div class="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
+                    <div id="demail" class="text-sm opacity-0 transition-opacity duration-500 text-gray-300 font-mono mt-3 hero-animate" style="--ha-delay: 0.5s;"></div>
+                    <div class="flex flex-wrap justify-center md:justify-start gap-2 mt-5">
                         <span class="hero-skill-tag text-xs px-2 py-1 rounded border border-white/20 text-gray-300">Python</span>
                         <span class="hero-skill-tag text-xs px-2 py-1 rounded border border-white/20 text-gray-300">Machine Learning</span>
                         <span class="hero-skill-tag text-xs px-2 py-1 rounded border border-white/20 text-gray-300">Deep Learning</span>
@@ -909,12 +1479,20 @@
                 </div>
             </div>
         </div>
+        <a href="#section-experience" class="hero-scroll-hint" aria-label="Scroll to experience">
+            <span>Explore</span>
+            <i class="fas fa-chevron-down"></i>
+        </a>
     </header>
 
     <!-- Experience & Education -->
-    <section class="py-16">
+    <section class="section-block" id="section-experience">
         <div class="container mx-auto px-4 max-w-6xl">
-            <h2 class="text-2xl font-bold mb-10 gradient-text">Experience &amp; Education</h2>
+            <div class="section-header fade-in-section">
+                <span class="section-label">Career</span>
+                <h2 class="section-title gradient-text">Experience &amp; Education</h2>
+                <p class="section-subtitle">Building AI/ML and automation systems in industry.</p>
+            </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-14 items-start">
                 <!-- Work experience column -->
@@ -923,28 +1501,54 @@
                         <i class="fas fa-briefcase theme-text-secondary"></i> Work experience
                     </h3>
                     <div class="space-y-8 relative">
-                <!-- FedEx Revenue Management Intern (Current) -->
+                <!-- FedEx Sr. Revenue Science Analyst (Current) -->
+                <div class="timeline-item relative pl-16 scroll-reveal" id="exp-fedex-analyst">
+                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full timeline-icon flex items-center justify-center text-white text-sm z-10">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="p-6 rounded-lg border theme-card">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+                            <h3 class="text-xl font-semibold theme-text-primary">Sr. Revenue Science Analyst</h3>
+                            <span class="text-sm theme-text-secondary">Jun 2026 &ndash; Present</span>
+                        </div>
+                        <div class="flex items-center mb-4">
+                            <img src="assets/Fedex.jpg" alt="FedEx" class="w-8 h-8 mr-2 rounded">
+                            <span class="theme-text-secondary text-sm">FedEx &middot; Plano, TX</span>
+                        </div>
+                        <ul class="space-y-2 theme-text-primary text-sm">
+                            <li>Driving AI initiatives by integrating LLMs, ML models, and enterprise tools to improve pricing workflows and operational efficiency for Pricing Analysts and Sales teams</li>
+                        </ul>
+                        <div class="flex flex-wrap gap-1 mt-4">
+                            <span class="tech-tag">LLMs</span>
+                            <span class="tech-tag">Machine Learning</span>
+                            <span class="tech-tag">AI</span>
+                            <span class="tech-tag">Pricing Analytics</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FedEx Revenue Management Intern -->
                 <div class="timeline-item relative pl-16 scroll-reveal" id="exp-fedex-intern">
-                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
+                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full timeline-icon flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-chart-line"></i>
                     </div>
                     <div class="p-6 rounded-lg border theme-card">
                         <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
                             <h3 class="text-xl font-semibold theme-text-primary">Revenue Management Intern</h3>
-                            <span class="text-sm theme-text-secondary">Sep 2025 &ndash; Present</span>
+                            <span class="text-sm theme-text-secondary">Sep 2025 &ndash; May 2026</span>
                         </div>
                         <div class="flex items-center mb-4">
                             <img src="assets/Fedex.jpg" alt="FedEx" class="w-8 h-8 mr-2 rounded">
                             <span class="theme-text-secondary text-sm">FedEx &middot; Los Angeles, CA</span>
                         </div>
                         <ul class="space-y-2 theme-text-primary text-sm">
-                            <li>Built 3 automated systems leveraging machine learning and probability models to automate pricing analyst workflows, cutting processing time from ~5 days to ~1 hour</li>
-                            <li>Partnered with cross-functional teams to create dashboards and AI proof-of-concepts for data-driven pricing systems</li>
+                            <li>Built 3 automated systems leveraging data engineering to automate pricing analyst workflows, cutting processing time from ~5 days to ~1 hour</li>
+                            <li>Partnered with cross-functional teams on Power BI to create dashboards and AI proof-of-concepts for data-driven pricing systems</li>
                         </ul>
                         <div class="flex flex-wrap gap-1 mt-4">
                             <span class="tech-tag">Python</span>
-                            <span class="tech-tag">ML</span>
-                            <span class="tech-tag">AWS</span>
+                            <span class="tech-tag">Data Engineering</span>
+                            <span class="tech-tag">Power BI</span>
                             <span class="tech-tag">Pricing Analytics</span>
                         </div>
                     </div>
@@ -952,7 +1556,7 @@
 
                 <!-- FedEx Revenue Management Summer Intern -->
                 <div class="timeline-item relative pl-16 scroll-reveal" id="exp-fedex-summer">
-                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
+                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full timeline-icon flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-database"></i>
                     </div>
                     <div class="p-6 rounded-lg border theme-card">
@@ -979,7 +1583,7 @@
 
                 <!-- FedEx Software Engineer -->
                 <div class="timeline-item relative pl-16 scroll-reveal" id="exp-fedex-swe">
-                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
+                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full timeline-icon flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-code"></i>
                     </div>
                     <div class="p-6 rounded-lg border theme-card">
@@ -1006,7 +1610,7 @@
 
                 <!-- Persistent Systems -->
                 <div class="timeline-item relative pl-16 scroll-reveal" id="exp-persistent">
-                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
+                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full timeline-icon flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-robot"></i>
                     </div>
                     <div class="p-6 rounded-lg border theme-card">
@@ -1033,7 +1637,7 @@
 
                 <!-- NICE -->
                 <div class="timeline-item relative pl-16 scroll-reveal" id="exp-nice">
-                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
+                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full timeline-icon flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-cloud"></i>
                     </div>
                     <div class="p-6 rounded-lg border theme-card">
@@ -1068,7 +1672,7 @@
                     <div class="space-y-8 relative">
                 <!-- M.S. Computer Science -->
                 <div class="timeline-item relative pl-16 scroll-reveal" id="edu-ms">
-                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
+                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full timeline-icon flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-graduation-cap"></i>
                     </div>
                     <div class="p-6 rounded-lg border theme-card">
@@ -1080,7 +1684,7 @@
                             <img src="assets/usc_logo.png" alt="USC" class="w-8 h-8 mr-2 rounded">
                             <span class="theme-text-secondary text-sm">USC Viterbi School of Engineering &middot; Los Angeles, CA</span>
                         </div>
-                        <p class="theme-text-secondary text-sm mb-2"><span class="font-medium">GPA:</span> 3.66/4.0</p>
+                        <p class="theme-text-secondary text-sm mb-2"><span class="font-medium">GPA:</span> 3.75/4.0</p>
                         <p class="theme-text-primary text-sm">
                             <span class="font-medium">Courses:</span> Applied Natural Language Processing, Advanced Computer Vision, Adversarial and Trustworthy Foundation Models, Analysis of Algorithms, Deep Learning and its Applications, Machine Learning for Data Science, Information Retrieval and Web Search Engines, Database Systems
                         </p>
@@ -1100,7 +1704,7 @@
 
                 <!-- B.E. Computer Engineering -->
                 <div class="timeline-item relative pl-16 scroll-reveal" id="edu-be">
-                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm z-10">
+                    <div class="absolute left-0 top-0 w-10 h-10 rounded-full timeline-icon flex items-center justify-center text-white text-sm z-10">
                         <i class="fas fa-university"></i>
                     </div>
                     <div class="p-6 rounded-lg border theme-card">
@@ -1141,9 +1745,13 @@
     <hr class="section-divider max-w-4xl mx-auto">
 
     <!-- Talks -->
-    <section class="py-16" id="section-talks">
+    <section class="section-block alt-bg fade-in-section" id="section-talks">
         <div class="container mx-auto px-4 max-w-4xl">
-            <h2 class="text-2xl font-bold mb-12 gradient-text">Talks</h2>
+            <div class="section-header">
+                <span class="section-label">Speaking</span>
+                <h2 class="section-title gradient-text">Talks</h2>
+                <p class="section-subtitle">Conference talks on quantum computing, cryptography, and ML.</p>
+            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <a href="https://youtu.be/zfrjzpVkrRA?t=4093" target="_blank" class="theme-card rounded-lg overflow-hidden border card-hover">
@@ -1176,9 +1784,13 @@
     <hr class="section-divider max-w-4xl mx-auto">
 
     <!-- Projects -->
-    <section class="py-16 neural-bg" id="section-projects">
-        <div class="container mx-auto px-4 max-w-6xl">
-            <h2 class="text-2xl font-bold mb-12 gradient-text">Projects</h2>
+    <section class="section-block neural-bg fade-in-section" id="section-projects">
+        <div class="container mx-auto px-4 max-w-6xl relative z-10">
+            <div class="section-header">
+                <span class="section-label">Portfolio</span>
+                <h2 class="section-title gradient-text">Projects</h2>
+                <p class="section-subtitle">Research and tools spanning LLM safety, interpretability, and applied ML.</p>
+            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
@@ -1214,7 +1826,7 @@
                             </div>
                             
                             <div class="flex gap-2">
-                                <a href="https://github.com/mitadake/gguf_k_quant_attack" target="_blank" class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded text-sm font-medium hover:from-indigo-700 hover:to-purple-700 transition flex items-center gap-2">
+                                <a href="https://github.com/mitadake/gguf_k_quant_attack" target="_blank" class="btn-primary">
                                     <i class="fab fa-github"></i>GitHub
                                 </a>
                                 <span class="text-xs theme-text-secondary flex items-center">
@@ -1237,19 +1849,14 @@
                         <span class="tech-tag">UMAP</span>
                     </div>
                     <div class="flex gap-2">
-                        <a href="https://tokengen.streamlit.app/" target="_blank" class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded text-base hover:from-indigo-700 hover:to-purple-700 transition btn-ripple shadow-lg hover:shadow-xl">Website</a>
-                        <a href="https://github.com/mitadake/tokengen" target="_blank" class="project-btn-outline px-4 py-2 border rounded text-base transition theme-text-primary" style="border-color: var(--border-color);">
+                        <a href="https://tokengen.streamlit.app/" target="_blank" class="btn-primary">Website</a>
+                        <a href="https://github.com/mitadake/tokengen" target="_blank" class="btn-secondary project-btn-outline theme-text-primary">
                             <i class="fab fa-github mr-1"></i>GitHub
                         </a>
                     </div>
                 </div>
-                <!-- Hate Speech Unlearning -->
-                <div class="p-7 rounded-lg border theme-card" id="proj-hate-speech">
-                    <h3 class="text-lg font-semibold mb-2 theme-text-primary">Hate Speech Unlearning for LLMs</h3>
-                    <p class="text-base theme-text-secondary mb-4">Implemented Task Vector Arithmetic, Contrastive Learning, and Fine-tuning to remove hate speech from LLaMA 3 models, dropping harmful rate from 62% to 34%.</p>
-                    <div class="flex flex-wrap gap-1">
-                        <span class="tech-tag">LLaMA 3</span>
-                        <span class="tech-tag">LLM Fine-tuning</span>
+                        <a href="https://tokengen.streamlit.app/" target="_blank" class="btn-primary">Website</a>
+                        <a href="https://github.com/mitadake/tokengen" target="_blank" class="btn-secondary project-btn-outline theme-text-primary">
                         <span class="tech-tag">LLM Safety</span>
                     </div>
                 </div>
@@ -1260,8 +1867,8 @@
                     <h3 class="text-lg font-semibold mb-2 theme-text-primary">AnyToken</h3>
                     <p class="text-base theme-text-secondary mb-4">Interactive HuggingFace tokenizer visualization tool</p>
                     <div class="flex gap-2">
-                        <a href="https://anytoken.streamlit.app/" target="_blank" class="px-4 py-2 bg-gray-800 text-white rounded text-base hover:bg-gray-700 transition">Website</a>
-                        <a href="https://github.com/mitadake/anytoken" target="_blank" class="project-btn-outline px-4 py-2 border rounded text-base transition theme-text-primary" style="border-color: var(--border-color);">GitHub</a>
+                        <a href="https://anytoken.streamlit.app/" target="_blank" class="btn-primary">Website</a>
+                        <a href="https://github.com/mitadake/anytoken" target="_blank" class="btn-secondary project-btn-outline theme-text-primary">GitHub</a>
                     </div>
                 </div>
 
@@ -1283,8 +1890,8 @@
                     <h3 class="text-lg font-semibold mb-2 theme-text-primary">Real-time Phishing Detection</h3>
                     <p class="text-base theme-text-secondary mb-4">Production ML models with Edge browser extension. Built during B.E. at PICT, Pune (undergraduate).</p>
                     <div class="flex gap-2">
-                        <a href="https://microsoftedge.microsoft.com/addons/detail/mr-phish/cfleogjiegdfbapbmindbpeebncpmbhf" target="_blank" class="px-4 py-2 bg-gray-800 text-white rounded text-base hover:bg-gray-700 transition">Extension</a>
-                        <a href="https://www.ijrte.org/portfolio-item/a76080512123/" target="_blank" class="project-btn-outline px-4 py-2 border rounded text-base transition theme-text-primary" style="border-color: var(--border-color);">Paper</a>
+                        <a href="https://microsoftedge.microsoft.com/addons/detail/mr-phish/cfleogjiegdfbapbmindbpeebncpmbhf" target="_blank" class="btn-primary">Extension</a>
+                        <a href="https://www.ijrte.org/portfolio-item/a76080512123/" target="_blank" class="btn-secondary project-btn-outline theme-text-primary">Paper</a>
                     </div>
                 </div>
 
@@ -1293,7 +1900,7 @@
                     <img src="assets/obj_det.png" alt="Object Detection" class="w-full h-64 object-contain rounded mb-4 p-3 project-img-wrapper" style="background: var(--bg-primary);">
                     <h3 class="text-lg font-semibold mb-2 theme-text-primary">Real-time Object Detection</h3>
                     <p class="text-base theme-text-secondary mb-4">High-performance computer vision system. Built during B.E. at PICT, Pune (undergraduate).</p>
-                    <a href="https://github.com/Mit-byte/PBL-2-Project" target="_blank" class="project-btn-outline px-4 py-2 border rounded text-base transition theme-text-primary" style="border-color: var(--border-color);">GitHub</a>
+                    <a href="https://github.com/Mit-byte/PBL-2-Project" target="_blank" rel="noopener noreferrer" class="btn-secondary project-btn-outline theme-text-primary">GitHub</a>
                 </div>
             </div>
         </div>
@@ -1302,9 +1909,13 @@
     <hr class="section-divider max-w-4xl mx-auto">
 
     <!-- Beyond the Code -->
-    <section class="py-16" id="section-beyond">
+    <section class="section-block alt-bg fade-in-section" id="section-beyond">
         <div class="container mx-auto px-4 max-w-4xl">
-            <h2 class="text-2xl font-bold mb-12 gradient-text">Beyond the Code</h2>
+            <div class="section-header">
+                <span class="section-label">Life</span>
+                <h2 class="section-title gradient-text">Beyond the Code</h2>
+                <p class="section-subtitle">Community, competition, and the interests that keep me curious.</p>
+            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="p-6 rounded-lg border theme-card" id="section-community">
@@ -1318,7 +1929,7 @@
                         </li>
                         <li class="flex items-start gap-2">
                             <i class="fas fa-laptop-code mt-1 text-xs"></i>
-                            <span>Conducted hackathons and hands-on sessions on Quantum Computing (<a href="https://www.credly.com/users/mitesh-adake/badges#credly" target="_blank" class="text-blue-400 underline hover:text-blue-300">Credly Badges</a>)</span>
+                            <span>Conducted hackathons and hands-on sessions on Quantum Computing (<a href="https://www.credly.com/users/mitesh-adake/badges#credly" target="_blank" rel="noopener noreferrer" class="content-link">Credly Badges</a>)</span>
                         </li>
                     </ul>
                 </div>
@@ -1330,7 +1941,7 @@
                     <ul class="space-y-3 text-sm theme-text-secondary">
                         <li class="flex items-start gap-2">
                             <i class="fas fa-chess mt-1 text-xs"></i>
-                            <span>Chess Player (<a href="https://ratings.uschess.org/player/32473707" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline hover:text-blue-300">US Chess profile</a>)</span>
+                            <span>Chess Player (<a href="https://ratings.uschess.org/player/32473707" target="_blank" rel="noopener noreferrer" class="content-link">US Chess profile</a>, <a href="https://lichess.org/@/Taumuon" target="_blank" rel="noopener noreferrer" class="content-link">Lichess profile</a>)</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <i class="fas fa-futbol mt-1 text-xs"></i>
@@ -1360,47 +1971,54 @@
             </div>
         </div>
     </section>
+    </main>
 
     <!-- Footer -->
-    <footer class="py-10 border-t" style="border-color: var(--border-color); background: var(--bg-secondary);">
+    <footer class="site-footer">
         <div class="container mx-auto px-4 text-center">
-            <p class="font-semibold theme-text-primary mb-1">Mitesh Adake</p>
-            <p class="text-sm theme-text-secondary mb-4">ML Engineer</p>
-            <div class="flex justify-center space-x-4 mb-4">
-                <a href="https://www.linkedin.com/in/mitesh-adake/" target="_blank" class="theme-text-secondary hover:theme-text-primary transition">
+            <p class="font-semibold theme-text-primary mb-1 text-lg" style="font-family: 'Plus Jakarta Sans', sans-serif;">Mitesh Adake</p>
+            <p class="text-sm theme-text-secondary mb-5">ML Engineer &middot; Plano, TX</p>
+            <div class="flex justify-center gap-4 mb-6">
+                <a href="https://www.linkedin.com/in/mitesh-adake/" target="_blank" rel="noopener noreferrer" class="theme-text-secondary hover:text-[var(--accent)] transition text-lg" aria-label="LinkedIn">
                     <i class="fab fa-linkedin-in"></i>
                 </a>
-                <a href="https://github.com/mitadake" target="_blank" class="theme-text-secondary hover:theme-text-primary transition">
+                <a href="https://github.com/mitadake" target="_blank" rel="noopener noreferrer" class="theme-text-secondary hover:text-[var(--accent)] transition text-lg" aria-label="GitHub">
                     <i class="fab fa-github"></i>
                 </a>
-                <a href="https://www.kaggle.com/miteshadake" target="_blank" class="theme-text-secondary hover:theme-text-primary transition">
+                <a href="https://www.kaggle.com/miteshadake" target="_blank" rel="noopener noreferrer" class="theme-text-secondary hover:text-[var(--accent)] transition text-lg" aria-label="Kaggle">
                     <i class="fab fa-kaggle"></i>
                 </a>
             </div>
-            <p class="text-xs theme-text-secondary">&copy; 2026 Mitesh Adake</p>
+            <a href="https://calendly.com/miteshadake" target="_blank" rel="noopener noreferrer" class="footer-cta">
+                <i class="fas fa-calendar-alt"></i> Schedule a call
+            </a>
+            <p class="text-xs theme-text-secondary mt-8">&copy; 2026 Mitesh Adake</p>
         </div>
     </footer>
 
+    <button id="back-to-top" aria-label="Back to top" title="Back to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
     <!-- AI Agent Chat Widget -->
     <div id="agent-fab-wrap">
-        <button type="button" id="agent-fab-hint" class="agent-fab-hint" aria-label="Open AI portfolio assistant" aria-expanded="false" aria-controls="agent-panel">
+        <button type="button" id="agent-fab-hint" class="agent-fab-hint" aria-label="Open chat" aria-expanded="false" aria-controls="agent-panel">
             <span class="agent-fab-hint-icon" aria-hidden="true"><i class="fas fa-robot"></i></span>
             <span class="agent-fab-hint-copy">
-                <span class="agent-fab-hint-title">Hi! I am an AI agent. Let&rsquo;s chat.</span>
+                <span class="agent-fab-hint-title">Hi! Let&rsquo;s chat.</span>
                 <span id="agent-fab-hint-tip" class="agent-fab-hint-tip">Ask about Mitesh, his resume, or book a call.</span>
             </span>
             <span class="agent-fab-hint-cta" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
         </button>
-        <button id="agent-fab" type="button" title="Ask AI Agent" aria-label="Open AI portfolio assistant" aria-expanded="false" aria-controls="agent-panel">
+        <button id="agent-fab" type="button" title="Chat" aria-label="Open chat" aria-expanded="false" aria-controls="agent-panel">
             <i class="fas fa-robot"></i>
         </button>
     </div>
 
-    <div id="agent-panel" role="dialog" aria-label="Portfolio assistant chat">
+    <div id="agent-panel" role="dialog" aria-label="Chat">
         <div id="agent-panel-header">
             <div>
-                <span class="font-semibold text-sm theme-text-primary">Portfolio Agent</span>
-                <span class="text-xs theme-text-secondary ml-2" style="opacity:0.7">Gemma 4 &middot; In-browser</span>
+                <span class="font-semibold text-sm theme-text-primary">Chat</span>
             </div>
             <button id="agent-close" style="background:none;border:none;cursor:pointer;" class="theme-text-secondary">
                 <i class="fas fa-times"></i>
@@ -1468,6 +2086,93 @@
             }
         }
 
+        // ── Navigation ──
+        const siteNav = document.getElementById('site-nav');
+        const navMenuBtn = document.getElementById('navMenuBtn');
+        const navMobileMenu = document.getElementById('navMobileMenu');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        function closeMobileMenu() {
+            navMobileMenu.classList.remove('open');
+            navMobileMenu.setAttribute('aria-hidden', 'true');
+            navMenuBtn.setAttribute('aria-expanded', 'false');
+        }
+
+        navMenuBtn.addEventListener('click', () => {
+            const open = navMobileMenu.classList.toggle('open');
+            navMobileMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
+            navMenuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => closeMobileMenu());
+        });
+
+        document.querySelector('.nav-brand').addEventListener('click', (e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            closeMobileMenu();
+        });
+
+        // ── Scroll progress & nav state ──
+        const scrollProgress = document.getElementById('scroll-progress');
+        const backToTop = document.getElementById('back-to-top');
+        const sections = ['section-experience', 'section-talks', 'section-projects', 'section-beyond'];
+
+        function onScroll() {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+            scrollProgress.style.width = progress + '%';
+
+            siteNav.classList.toggle('scrolled', scrollTop > 24);
+            backToTop.classList.toggle('show', scrollTop > 400);
+
+            let current = '';
+            sections.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && el.getBoundingClientRect().top <= 120) current = id;
+            });
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                link.classList.toggle('active', href === '#' + current);
+            });
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Hero chat button opens the widget
+        const heroChatBtn = document.getElementById('hero-chat-btn');
+        if (heroChatBtn) {
+            heroChatBtn.addEventListener('click', () => {
+                const fab = document.getElementById('agent-fab');
+                if (fab) fab.click();
+            });
+        }
+
+        // ── Fade-in sections ──
+        (function initFadeSections() {
+            const els = document.querySelectorAll('.fade-in-section');
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                els.forEach(el => el.classList.add('visible'));
+                return;
+            }
+            const obs = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        obs.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+            els.forEach(el => obs.observe(el));
+        })();
+
         (function initScrollReveal() {
             if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                 document.querySelectorAll('.scroll-reveal, .col-heading-reveal')
@@ -1494,6 +2199,11 @@
 
             document.querySelectorAll('.col-heading-reveal').forEach(el => observer.observe(el));
         })();
+    </script>
+    <!-- AI agent config: set your deployed proxy URL here (holds the Ollama key server-side). -->
+    <script>
+        window.AGENT_PROXY_URL = 'https://mitadake-ollama-proxy.mitadake.workers.dev';
+        window.AGENT_CHAT_MODEL = 'gemma4:e4b';
     </script>
     <script src="agent.js"></script>
 </body>

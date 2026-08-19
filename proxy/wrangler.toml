@@ -1,0 +1,11 @@
+name = "mitadake-ollama-proxy"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+# Set OLLAMA_API_KEY as a secret (NOT here):
+#   npx wrangler secret put OLLAMA_API_KEY
+#
+# Optionally restrict which sites may call the proxy (comma-separated).
+# Defaults are defined in worker.js if this is left unset.
+[vars]
+# ALLOWED_ORIGINS = "https://mitadake.github.io"

@@ -1,164 +1,93 @@
-// Transformers.js v4 loaded dynamically at runtime via import()
-// ── Knowledge Base ──────────────────────────────────────────────────────────
-// Text fields use natural language that mirrors how users ask questions.
-const KB = [
+// ─────────────────────────────────────────────────────────────────────────────
+// Portfolio AI agent
+//
+// Architecture (see README notes / build scripts):
+//   • Knowledge base lives in kb.json (data only, single source of truth).
+//   • kb-embeddings.json holds precomputed embeddings (built offline via
+//     scripts/build-embeddings.mjs) so we never re-embed the whole KB in-browser.
+//   • At runtime we embed ONLY the user's query in-browser with the same small
+//     model (bge-small) used offline, so vectors share one space.
+//   • Retrieval is hybrid: vector cosine + lexical keyword overlap.
+//   • Answer generation runs on Ollama Cloud (gemma4), called through a small
+//     serverless proxy that holds the API key as a secret (never shipped to the
+//     browser). If no proxy is configured, we fall back to the retrieved answer.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Config ──────────────────────────────────────────────────────────────────
+// Point this at your deployed proxy (Cloudflare Worker, etc.). The proxy adds the
+// Authorization header and forwards to https://ollama.com/api/chat. Leave as the
+// placeholder to run in retrieval-only mode (no cloud generation).
+const AGENT_PROXY_URL =
+  (typeof window !== 'undefined' && window.AGENT_PROXY_URL) ||
+  'https://YOUR-WORKER-SUBDOMAIN.workers.dev/api/chat';
+
+const CHAT_MODEL =
+  (typeof window !== 'undefined' && window.AGENT_CHAT_MODEL) || 'gemma4:e4b';
+
+const EMBED_MODEL = 'Xenova/bge-small-en-v1.5';
+const EMBED_DTYPE = 'q8';
+const MAX_OUTPUT_TOKENS = 256;
+
+// Retrieval tuning.
+const TOP_K = 4;
+const VECTOR_WEIGHT = 0.65;
+const LEXICAL_WEIGHT = 0.35;
+const RELEVANCE_THRESHOLD = 0.2;
+
+// High-confidence intent rules: map phrasing to the best KB entry index.
+// Checked before hybrid retrieval so follow-up chips and paraphrases hit the right answer.
+const INTENT_RULES = [
   {
-    id: 'exp-fedex-intern',
-    text: 'What is Mitesh doing right now? He is currently working as a Revenue Management Intern at FedEx in Los Angeles, building machine learning systems for pricing automation on AWS.',
-    answer: 'Mitesh is currently a Revenue Management Intern at FedEx in Los Angeles (Sep 2025 -- present). He built 3 automated systems using ML and probability models that cut pricing analyst processing time from ~5 days to ~1 hour, and partnered with cross-functional teams on AWS dashboards and AI proof-of-concepts.',
-    followUps: ['Tell me about the summer internship', 'What other FedEx roles did he have?', 'What ML skills does he use?']
+    re: /other\s+fedex\s+roles|all\s+(of\s+)?(his\s+)?fedex\s+roles|fedex\s+roles\s+(did|has)|tell\s+me\s+about\s+(the\s+)?fedex\s+roles|what\s+fedex\s+roles|how\s+many\s+times.*fedex|fedex\s+positions|roles\s+at\s+fedex/i,
+    idx: 4,
+    viewId: 'exp-fedex-analyst',
   },
   {
-    id: 'exp-fedex-summer',
-    text: 'Mitesh worked as a Revenue Management Summer Intern at FedEx in Memphis. He built automated database systems using Python, SQL, Streamlit, and Docker.',
-    answer: 'During summer 2025, Mitesh interned at FedEx in Memphis as a Revenue Management Summer Intern. He built an automated system with Python, SQL, Streamlit, and Docker for business-critical database operations, reducing manual processing time from ~10 days to ~10 minutes through statistical analysis.',
-    followUps: ['What about his current FedEx role?', 'Tell me about the software engineer position', 'What tools does he use?']
+    re: /\b(ml|machine\s+learning|ai|technical|tech)\s+skills\b|\bwhat\s+(are\s+)?(his|mitesh'?s?)\s+(key\s+)?skills\b|\bskills\s+does\s+he\b|\btoolkit\b|\btech\s+stack\b/i,
+    idx: 11,
+    viewId: 'edu-ms',
   },
   {
-    id: 'exp-fedex-swe',
-    text: 'Mitesh worked as a Software Engineer at FedEx in Hyderabad India. He migrated data pipelines from Dataiku to Ab Initio ETL and optimized NLP code saving one million dollars annually.',
-    answer: 'Mitesh worked as a Software Engineer at FedEx in Hyderabad (Aug 2023 -- Jul 2024). He migrated a Dataiku pipeline to Ab Initio for the Harmonized Code search engine, saving $1M annually. He also optimized NLP code in Python, reducing data discrepancies from 25% to negligible and eliminating data shuffling from 75% of text data.',
-    followUps: ['What is his current role?', 'Tell me about his NLP skills', 'What projects has he built?']
+    re: /\bnlp\s+skills\b|natural\s+language\s+processing\s+(skills|work|experience)/i,
+    idx: 25,
+    viewId: 'proj-tokengen',
   },
   {
-    id: 'exp-fedex-intern',
-    text: 'Tell me about all of Mitesh FedEx roles. He has worked at FedEx three times as intern and software engineer in revenue management, data automation, pricing, and NLP pipeline optimization.',
-    answer: 'Mitesh has held 3 roles at FedEx: (1) Revenue Management Intern in LA (current) -- building ML-powered pricing automation, (2) Revenue Management Summer Intern in Memphis -- automating database operations with Python/SQL, and (3) Software Engineer in Hyderabad -- migrating data pipelines and optimizing NLP code, saving $1M annually.',
-    followUps: ['What other companies has he worked at?', 'What are his key skills?', 'Tell me about his education']
+    re: /what\s+is\s+mitesh'?s?\s+experience|work\s+experience|professional\s+background|job\s+history|career/i,
+    idx: 5,
+    viewId: 'exp-fedex-analyst',
   },
   {
-    id: 'exp-fedex-intern',
-    text: 'What is Mitesh experience? What has he worked on? Tell me about his work experience, professional background, career, job history, and work he has done.',
-    answer: 'Mitesh has extensive experience across ML engineering and data roles: 3 positions at FedEx (pricing automation, database systems, NLP pipeline optimization), ML intern at Persistent Systems (NLP deduplication), and Data Engineer intern at NICE (AWS serverless systems). He is currently interning at FedEx while completing his M.S. at USC.',
-    followUps: ['Tell me about FedEx roles', 'What are his skills?', 'What projects has he built?']
+    re: /who\s+is\s+mitesh|tell\s+me\s+about\s+mitesh\b|about\s+him\b/i,
+    idx: 24,
+    viewId: 'exp-fedex-analyst',
   },
   {
-    id: 'exp-persistent',
-    text: 'Mitesh interned at Persistent Systems as a Machine Learning Intern in Pune India. He built an NLP question deduplication system using Python, Flask, FastAPI, and Docker.',
-    answer: 'At Persistent Systems (Jun -- Aug 2022), Mitesh implemented an NLP-based question deduplication system for the company\'s community portal, reducing duplicate postings to 10%. He built it with Python, Flask, FastAPI, and Docker.',
-    followUps: ['What about his FedEx experience?', 'Tell me about NICE internship', 'What NLP projects has he done?']
+    re: /what\s+is\s+mitesh\s+doing|current\s+role|right\s+now|what\s+does\s+he\s+do\s+now/i,
+    idx: 0,
+    viewId: 'exp-fedex-analyst',
   },
   {
-    id: 'exp-nice',
-    text: 'Mitesh interned at NICE as a Data Engineer in Pune India. He built serverless file ingestion on AWS using S3 DynamoDB Lambda and MongoDB with a Python Flask interface.',
-    answer: 'At NICE (Nov 2021 -- Apr 2022), Mitesh built a scalable, serverless real-time file ingestion system using AWS (S3, DynamoDB, Lambda) and MongoDB, plus a Python Flask interface for data management.',
-    followUps: ['What cloud skills does he have?', 'Tell me about his education', 'What other internships?']
+    re: /what\s+is\s+(his|mitesh'?s?)\s+education|where\s+did\s+he\s+study|educational\s+background/i,
+    idx: 10,
+    viewId: 'edu-ms',
   },
   {
-    id: 'edu-ms',
-    text: 'Mitesh is studying at USC University of Southern California for a Master of Science in Computer Science at Viterbi School of Engineering with a 3.66 GPA. His courses include Applied NLP and Computer Vision.',
-    answer: 'Mitesh is pursuing an M.S. in Computer Science at USC Viterbi School of Engineering (Aug 2024 -- May 2026) with a 3.66 GPA. His coursework includes Applied NLP, Advanced Computer Vision, and Adversarial & Trustworthy Foundation Models.',
-    followUps: ['What about his undergraduate?', 'What skills has he developed?', 'What projects did he build at USC?']
+    re: /what\s+projects|projects\s+has\s+he\s+built|portfolio/i,
+    idx: 19,
+    viewId: 'section-projects',
   },
-  {
-    id: 'edu-be',
-    text: 'Mitesh got his Bachelor of Engineering in Computer Engineering from Pune Institute of Computer Technology PICT with a 3.84 GPA and Honors in AI and ML. He studied Machine Learning, NLP, Deep Learning, and Quantum Computing.',
-    answer: 'Mitesh earned a B.E. in Computer Engineering from Pune Institute of Computer Technology (Jul 2019 -- May 2023) with a 3.84 GPA. He completed Honors in AI & ML, with coursework in Data Structures, Machine Learning, NLP, Deep Learning, and Quantum Computing.',
-    followUps: ['Tell me about USC', 'What internships did he do during undergrad?', 'What projects has he built?']
-  },
-  {
-    id: 'edu-ms',
-    text: 'What is Mitesh education? Where did he study? Tell me about his educational background, university, college, school, degree, GPA, courses, and academic history.',
-    answer: 'Mitesh holds an M.S. in Computer Science from USC Viterbi (3.66 GPA, graduating May 2026) and a B.E. in Computer Engineering from PICT, Pune (3.84 GPA, Honors in AI & ML). His coursework spans NLP, Computer Vision, Deep Learning, and Adversarial Foundation Models.',
-    followUps: ['What is his work experience?', 'What projects has he built?', 'What are his skills?']
-  },
-  {
-    id: 'exp-fedex-intern',
-    text: 'What are Mitesh skills and technical abilities? He knows Python, Java, MongoDB, MySQL, SQL, AWS, GCP, PyTorch, TensorFlow, Keras, Docker, Flask, FastAPI, and many other tools.',
-    answer: 'Mitesh\'s key skills: Python, Java | MongoDB, MySQL, SQL | AWS, GCP | Neural Networks, NLP, LLMs, PyTorch, TensorFlow, Keras | Ab Initio, Dataiku, Docker, Flask, FastAPI, Django, Power BI. He has deep expertise in applied ML and NLP.',
-    followUps: ['What ML projects has he done?', 'Tell me about his experience', 'What cloud platforms does he use?']
-  },
-  {
-    id: 'proj-tokengen',
-    text: 'Tell me about TokenGen. TokenGen is a visualization tool that shows layer-wise prediction evolution across transformer layers in GPT-2 and OPT large language models. It is an LLM interpretability project.',
-    answer: 'TokenGen is a visualization tool for analyzing layer-wise token evolution patterns across 12+ transformer layers in GPT-2 and OPT models. Built with Streamlit and UMAP, it\'s an LLM interpretability tool. Try the live demo at tokengen.streamlit.app.',
-    followUps: ['What other projects has he built?', 'Tell me about hate speech unlearning', 'What about AnyToken?']
-  },
-  {
-    id: 'proj-hate-speech',
-    text: 'Mitesh worked on Hate Speech Unlearning for LLMs using LLaMA 3. He used Task Vector Arithmetic, Contrastive Learning, and Fine-tuning to improve AI safety and alignment.',
-    answer: 'Mitesh worked on Hate Speech Unlearning for LLMs, implementing Task Vector Arithmetic, Contrastive Learning, and Fine-tuning to remove hate speech from LLaMA 3 models. He reduced the harmful rate from 62% to 34% on the PKU-SafeRLHF dataset.',
-    followUps: ['Tell me about TokenGen', 'What other NLP projects?', 'What about PriceNet?']
-  },
-  {
-    id: 'proj-anytoken',
-    text: 'What is AnyToken? AnyToken is an interactive HuggingFace vocabulary and subword segmentation visualization tool that shows how different models break down input text.',
-    answer: 'AnyToken is an interactive HuggingFace tokenizer visualization tool built by Mitesh. It helps users understand how different tokenizers break down text. Try it at anytoken.streamlit.app.',
-    followUps: ['Tell me about TokenGen', 'What is PriceNet?', 'What NLP skills does he have?']
-  },
-  {
-    id: 'proj-pricenet',
-    text: 'PriceNet is a stock price prediction project using Llama and Gemini LLMs for explainable financial time series forecasting in FinTech.',
-    answer: 'PriceNet is a stock price prediction system using Llama and Gemini for explainable financial time series forecasting. It combines LLM capabilities with financial data analysis for FinTech applications.',
-    followUps: ['What about TokenGen?', 'Tell me about phishing detection', 'What ML skills does he have?']
-  },
-  {
-    id: 'proj-phishing',
-    text: 'Mitesh built a Real-time Phishing Detection system with ML models deployed as a Microsoft Edge browser extension. He published a research paper about it.',
-    answer: 'Mitesh built a Real-time Phishing Detection system using production ML models, deployed as a Microsoft Edge browser extension, during his B.E. at Pune Institute of Computer Technology (PICT). The research was published in an academic paper.',
-    followUps: ['What other projects?', 'Tell me about object detection', 'What is his experience?']
-  },
-  {
-    id: 'proj-objdet',
-    text: 'Mitesh built a Real-time Object Detection system for computer vision, a high-performance detection application.',
-    answer: 'Mitesh built a high-performance real-time object detection system during his B.E. at Pune Institute of Computer Technology (PICT). The code is available on GitHub.',
-    followUps: ['Tell me about TokenGen', 'What are his key projects?', 'What is his experience?']
-  },
-  {
-    id: 'section-projects',
-    text: 'What projects did Mitesh build at USC? What graduate projects did he do at University of Southern California Viterbi during his masters MS degree?',
-    answer: 'During his M.S. at USC Viterbi (Aug 2024--May 2026), Mitesh\'s main portfolio projects are TokenGen (LLM layer-wise interpretability), Hate Speech Unlearning for LLaMA 3, AnyToken (tokenizer visualization), and PriceNet (LLM-based explainable stock forecasting). The Real-time Phishing Detection browser extension and Real-time Object Detection system were built during his B.E. at PICT in Pune, not at USC.',
-    followUps: ['What projects has he built in total?', 'Tell me about TokenGen', 'Show me his education']
-  },
-  {
-    id: 'section-projects',
-    text: 'What projects has Mitesh built? Tell me about his projects, portfolio, applications, tools, and side work. What has he created and developed?',
-    answer: 'Mitesh\'s projects split by school: at USC (M.S.): TokenGen, Hate Speech Unlearning for LLaMA 3, AnyToken, and PriceNet. At PICT during his B.E.: Real-time Phishing Detection (Microsoft Edge extension, published paper) and Real-time Object Detection.',
-    followUps: ['Tell me about TokenGen', 'What about the phishing paper?', 'What is PriceNet?']
-  },
-  {
-    id: 'section-talks',
-    text: 'Has Mitesh given any talks or presentations? He spoke at conferences about quantum cryptography, Qiskit quantum computing, and quantum-classical machine learning at IEEE workshops.',
-    answer: 'Mitesh has given multiple talks: Quantum Cryptography (IEEE, Python + Qiskit), Qiskit 101 Live Demo (hands-on quantum computing), and Quantum-Classical ML (comparative analysis research at QAMP). He was also a Qiskit Advocate.',
-    followUps: ['What about his community involvement?', 'Tell me about his education', 'What are his interests?']
-  },
-  {
-    id: 'section-community',
-    text: 'Mitesh is involved in the community. He mentored an IEEE quantum communications workshop as a Qiskit Advocate and ran a hackathon at Delhi University.',
-    answer: 'Mitesh is active in the community: he mentored an IISC-IEEE Quantum Communications workshop as a Qiskit Advocate and conducted a hackathon and hands-on session at Delhi University.',
-    followUps: ['What are his personal interests?', 'Tell me about his talks', 'What is his experience?']
-  },
-  {
-    id: 'section-interests',
-    text: 'What are Mitesh personal interests and hobbies? He plays chess with a US Chess rating, likes football and soccer, and competes in Kaggle ML competitions.',
-    answer: 'Outside of work, Mitesh is a chess player (US Chess rating 1685), football/soccer enthusiast, and is active on Kaggle as a Competitions Expert and a Notebooks Expert. He draws inspiration from Andrej Karpathy and Richard Feynman.',
-    followUps: ['What is his work experience?', 'What projects has he built?', 'Tell me about his Kaggle profile']
-  },
-  {
-    id: 'section-interests',
-    text: 'What is Mitesh Kaggle profile? Is he a Kaggle expert? Competitions Expert Notebooks Expert badges tiers on Kaggle miteshadake.',
-    answer: 'On Kaggle (kaggle.com/miteshadake), Mitesh holds the Competitions Expert tier and the Notebooks Expert tier -- Kaggle\'s recognition for sustained competition performance and high-quality public notebooks, respectively.',
-    followUps: ['What are his personal interests?', 'What is his experience?', 'Tell me about his education']
-  },
-  {
-    id: 'exp-fedex-intern',
-    text: 'Who is Mitesh Adake? Tell me about him. He is an ML Engineer in Los Angeles studying at USC and interning at FedEx, specializing in NLP and LLMs. Contact him on LinkedIn or GitHub.',
-    answer: 'Mitesh Adake is an ML Engineer based in Los Angeles, currently pursuing an M.S. in Computer Science at USC while interning at FedEx. He specializes in NLP, LLMs, and Deep Learning. Connect with him on LinkedIn (linkedin.com/in/mitesh-adake) or GitHub (github.com/mitadake).',
-    followUps: ['What is his experience?', 'What are his skills?', 'What projects has he built?']
-  },
-  {
-    id: 'exp-fedex-intern',
-    text: 'What NLP and natural language processing work has Mitesh done? He has experience with language models, transformers, BERT, GPT, text classification, and question answering systems.',
-    answer: 'Mitesh has deep NLP expertise: he optimized NLP pipelines at FedEx (reducing data discrepancies from 25% to near-zero), built question deduplication at Persistent Systems, created TokenGen for LLM interpretability, AnyToken for tokenizer visualization, and worked on hate speech unlearning with LLaMA 3. His coursework includes Applied NLP at USC.',
-    followUps: ['Tell me about TokenGen', 'What LLM work has he done?', 'What about his FedEx NLP work?']
-  },
-  {
-    id: 'exp-fedex-intern',
-    text: 'What machine learning and deep learning and AI experience does Mitesh have? He has worked with neural networks, PyTorch, TensorFlow, model training, inference, and prediction systems.',
-    answer: 'Mitesh is deeply experienced in ML/AI: he built ML-powered pricing automation at FedEx, implemented NLP deduplication models at Persistent Systems, created LLM interpretability tools (TokenGen), worked on LLM safety (hate speech unlearning), and built predictive models (PriceNet, phishing detection). His toolkit includes PyTorch, TensorFlow, and Keras.',
-    followUps: ['What NLP work has he done?', 'Tell me about his projects', 'What is his education?']
-  }
 ];
+
+const CALL_SCHEDULING_URL = 'https://calendly.com/miteshadake';
+const CALL_INTENT_PATTERN = /\b(schedule|book|set up|setup|arrange)\b.*\b(call|meeting|chat)\b|\bcall\b.*\b(schedule|book|meeting)\b/i;
+const RESUME_PATH = 'assets/Resume__Mitesh__Adake.pdf';
+const RESUME_URL = typeof window !== 'undefined'
+  ? new URL(RESUME_PATH, window.location.href).href
+  : RESUME_PATH;
+const RESUME_INTENT_PATTERN = /\b(cv|resume|curriculum\s+vitae)\b|where\s+.*\bresume\b|resume\s+where|download\s+.*\b(cv|resume)\b/i;
+
+const SYSTEM_PROMPT = 'You are a concise portfolio assistant for Mitesh Adake. Answer questions using ONLY the provided context. If the context distinguishes where work was done (for example USC graduate work vs PICT undergraduate work), keep that distinction exactly -- do not say Phishing Detection or Object Detection were USC projects if the context says they were at PICT. If the context does not contain relevant information, say you are not sure. Keep responses brief (2-3 sentences max). Do not make up information. Do not use markdown formatting.';
 
 const DEFAULT_CHIPS = [
   "What is Mitesh's experience?",
@@ -169,36 +98,18 @@ const DEFAULT_CHIPS = [
   "Resume"
 ];
 
-const SIMILARITY_THRESHOLD = 0.1;
-const CALL_SCHEDULING_URL = 'https://calendly.com/miteshadake';
-const CALL_INTENT_PATTERN = /\b(schedule|book|set up|setup|arrange)\b.*\b(call|meeting|chat)\b|\bcall\b.*\b(schedule|book|meeting)\b/i;
-const RESUME_PATH = 'assets/Mitesh%20Adake_Engineer_20260126.pdf';
-const RESUME_URL = typeof window !== 'undefined'
-  ? new URL(RESUME_PATH, window.location.href).href
-  : RESUME_PATH;
-const RESUME_INTENT_PATTERN = /\b(cv|resume|curriculum\s+vitae)\b|where\s+.*\bresume\b|resume\s+where|download\s+.*\b(cv|resume)\b/i;
-const GEMMA_SYSTEM_PROMPT = 'You are a concise portfolio assistant for Mitesh Adake. Answer questions using ONLY the provided context. If the context distinguishes where work was done (for example USC graduate work vs PICT undergraduate work), keep that distinction exactly -- do not say Phishing Detection or Object Detection were USC projects if the context says they were at PICT. If the context doesn\'t contain relevant information, say you\'re not sure. Keep responses brief (2-3 sentences max). Do not make up information. Do not use markdown formatting.';
-
-/** Strip Gemma control tokens: <|...|> and malformed variants like <turn|> (no pipe after '<'). */
-function sanitizeGemmaDisplayText(text) {
-  if (!text) return '';
-  return text
-    .replace(/<\|[^|]+?\|>/g, '')
-    .replace(/<[a-zA-Z][a-zA-Z0-9_]*\|>/g, '');
+function cloudGenerationEnabled() {
+  return typeof AGENT_PROXY_URL === 'string' && !AGENT_PROXY_URL.includes('YOUR-WORKER');
 }
 
 // ── State ───────────────────────────────────────────────────────────────────
+let KB = [];
+let kbEmbeddings = null; // array aligned to KB: number[][]
 let extractor = null;
-let kbEmbeddings = null;
 let transformersLib = null;
-let gemmaModel = null;
-let gemmaProcessor = null;
-let gemmaReady = false;
-/** One shared load chain (embedding + KB index + Gemma), started on page load. */
-let modelInitPromise = null;
-/** Resolves when embeddings are ready (before Gemma), so queries can proceed early. */
-let embeddingInitPromise = null;
-/** Model load status lines; flushed into the chat when the panel is open. */
+/** One shared init chain (load data + embedder), started on page load. */
+let initPromise = null;
+/** Model/data load status lines; flushed into the chat when the panel is open. */
 const modelStatusQueue = [];
 
 function queueModelStatus(html) {
@@ -213,7 +124,7 @@ function flushModelStatusQueue() {
   }
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
+// ── Vector helpers ────────────────────────────────────────────────────────────
 function dot(a, b) {
   let s = 0;
   for (let i = 0; i < a.length; i++) s += a[i] * b[i];
@@ -227,27 +138,108 @@ async function embed(text) {
   return Array.from(out.data);
 }
 
-async function embedAll() {
-  const results = [];
-  for (const chunk of KB) {
-    results.push(await embed(chunk.text));
-  }
-  return results;
+// ── Lexical helpers (keyword overlap component of hybrid retrieval) ───────────
+const STOPWORDS = new Set([
+  'a', 'an', 'the', 'and', 'or', 'of', 'to', 'in', 'on', 'at', 'for', 'is', 'are',
+  'was', 'were', 'be', 'been', 'his', 'her', 'he', 'she', 'him', 'me', 'my', 'i',
+  'you', 'your', 'it', 'its', 'about', 'what', 'who', 'when', 'where', 'how', 'did',
+  'does', 'do', 'has', 'have', 'had', 'tell', 'show', 'with', 'that', 'this', 'them',
+  'from', 'more', 'any', 'all', 'can', 'could', 'would', 'should'
+]);
+
+function tokenize(text) {
+  return (text.toLowerCase().match(/[a-z0-9.+#]+/g) || []).filter(
+    (t) => t.length > 1 && !STOPWORDS.has(t)
+  );
 }
 
-function search(queryVec, topK = 1) {
-  const scored = kbEmbeddings.map((vec, i) => ({ i, score: cosine(queryVec, vec) }));
+let kbTokenSets = null;
+function ensureKbTokenSets() {
+  if (kbTokenSets) return;
+  kbTokenSets = KB.map((entry) => new Set(tokenize(`${entry.text} ${entry.answer}`)));
+}
+
+function lexicalScore(queryTokens, idx) {
+  if (!queryTokens.length) return 0;
+  const set = kbTokenSets[idx];
+  let hits = 0;
+  for (const t of queryTokens) if (set.has(t)) hits++;
+  return hits / queryTokens.length;
+}
+
+/** Exact follow-up chip text -> KB index (built once KB is loaded). */
+let followUpIndex = null;
+function buildFollowUpIndex() {
+  if (followUpIndex) return;
+  followUpIndex = new Map();
+  const targets = {
+    'What other FedEx roles did he have?': 4,
+    'Tell me about the FedEx roles': 4,
+    'Tell me about his ML skills': 11,
+    'What ML skills does he use?': 11,
+    'What are his skills?': 11,
+    'What are his key skills?': 11,
+    'What is his experience?': 5,
+    "What is Mitesh's experience?": 5,
+    'Show me his education': 10,
+    'What NLP skills does he have?': 25,
+    'Tell me about his NLP skills': 25,
+  };
+  const viewByIdx = {
+    0: 'exp-fedex-analyst',
+    4: 'exp-fedex-analyst',
+    5: 'exp-fedex-analyst',
+    10: 'edu-ms',
+    11: 'edu-ms',
+    19: 'section-projects',
+    24: 'exp-fedex-analyst',
+    25: 'proj-tokengen',
+  };
+  for (const [phrase, idx] of Object.entries(targets)) {
+    followUpIndex.set(phrase.toLowerCase(), { idx, viewId: viewByIdx[idx] ?? null });
+  }
+}
+
+function matchIntent(query) {
+  buildFollowUpIndex();
+  const exact = followUpIndex.get(query.trim().toLowerCase());
+  if (exact) return { ...exact, source: 'followup' };
+
+  for (const rule of INTENT_RULES) {
+    if (rule.re.test(query)) return { idx: rule.idx, viewId: rule.viewId, source: 'intent' };
+  }
+  return null;
+}
+
+/** Hybrid retrieval with optional intent boost on a specific entry. */
+function retrieve(queryVec, queryText, topK = TOP_K, intentIdx = null) {
+  ensureKbTokenSets();
+  const queryTokens = tokenize(queryText);
+  const scored = kbEmbeddings.map((vec, i) => {
+    const cos = cosine(queryVec, vec);
+    const lex = lexicalScore(queryTokens, i);
+    let score = VECTOR_WEIGHT * cos + LEXICAL_WEIGHT * lex;
+    if (intentIdx === i) score += 0.35; // strong boost for matched intent
+    return { i, cos, lex, score };
+  });
   scored.sort((a, b) => b.score - a.score);
+
+  // If intent matched, pin that entry at the top when it's reasonably relevant.
+  if (intentIdx != null) {
+    const pinned = scored.find((r) => r.i === intentIdx);
+    if (pinned && pinned.cos >= RELEVANCE_THRESHOLD * 0.85) {
+      const rest = scored.filter((r) => r.i !== intentIdx);
+      return [pinned, ...rest].slice(0, topK);
+    }
+  }
   return scored.slice(0, topK);
 }
 
-/**
- * Which on-page section to scroll to. The top embedding hit is often a generic
- * "experience" row while the answer is about a specific role; combine the user
- * query with top-K matches so links match the topic (e.g. NICE -> exp-nice).
- */
-function pickViewSectionId(query, results) {
-  const above = results.filter((r) => r.score >= SIMILARITY_THRESHOLD);
+/** Pick scroll target; intent viewId takes precedence over regex heuristics. */
+function pickViewSectionId(query, results, intent) {
+  if (intent?.viewId) return intent.viewId;
+
+  const above = results.filter((r) => r.cos >= RELEVANCE_THRESHOLD);
   if (!above.length) return KB[results[0].i].id;
 
   const hasId = (id) => above.some((r) => KB[r.i].id === id);
@@ -257,6 +249,9 @@ function pickViewSectionId(query, results) {
     { re: /\bpersistent\b/i, id: 'exp-persistent' },
     { re: /(fedex|fed\s+ex).*(summer|memphis)|summer.*(fedex|fed\s+ex)/i, id: 'exp-fedex-summer' },
     { re: /(fedex|fed\s+ex).*(hyderabad|software\s+engineer)|hyderabad.*(fedex|fed\s+ex)/i, id: 'exp-fedex-swe' },
+    { re: /other\s+fedex\s+roles|all\s+fedex\s+roles|fedex\s+roles|roles\s+at\s+fedex/i, id: 'exp-fedex-analyst' },
+    { re: /analyst|revenue\s+science|current\s+role|right\s+now|plano/i, id: 'exp-fedex-analyst' },
+    { re: /\b(ml|machine\s+learning|technical|tech)\s+skills\b|\bskills\b/i, id: 'edu-ms' },
     { re: /\bfedex\b|fed\s+ex/i, id: 'exp-fedex-intern' },
     { re: /(usc|viterbi).*\bproject|\bproject.*(usc|viterbi)|projects.*at\s+usc|projects did he build at usc/i, id: 'section-projects' },
     { re: /\busc\b|viterbi|(\bms\b|\bm\.s\.|master).*computer|graduate.*usc|usc.*(master|graduate|\bcs\b)/i, id: 'edu-ms' },
@@ -305,8 +300,8 @@ const panel = document.getElementById('agent-panel');
 
 const HINT_TIP_ROTATION = [
   'Ask about Mitesh, his resume, or book a call.',
-  'Runs in your browser, your questions stay on this device.',
-  'Try a chip inside, or type anything you are curious about.'
+  'Try a suggested question, or type your own.',
+  'Questions about experience, projects, or education welcome.'
 ];
 let hintTipInterval = null;
 const closeBtn = document.getElementById('agent-close');
@@ -358,7 +353,7 @@ function togglePanel() {
   }
   if (panelOpen && firstOpen) {
     firstOpen = false;
-    addBotMessage('Hi! I\'m an AI agent running <strong>entirely in your browser</strong> powered by <strong>Gemma 4</strong>. Ask me anything about Mitesh\'s experience, skills, or projects. Note: I may not always provide accurate information.');
+    addBotMessage('Hi! Ask me anything about Mitesh\'s experience, skills, projects, or education.');
     showChips(DEFAULT_CHIPS);
     flushModelStatusQueue();
   } else if (panelOpen) {
@@ -424,95 +419,53 @@ function removeLoadingIndicator() {
   if (el) el.remove();
 }
 
-// ── Model init (page-load background + shared promise) ─────────────────────
-async function _initEmbeddings() {
-  if (!transformersLib) {
-    queueModelStatus('<i class="fas fa-download" style="margin-right:6px"></i>Loading AI models...');
-    transformersLib = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.1');
-  }
-  if (!extractor) {
-    queueModelStatus('<i class="fas fa-cog fa-spin" style="margin-right:6px"></i>Initializing embedding model...');
-    const { pipeline } = transformersLib;
-    extractor = await pipeline('feature-extraction', 'Xenova/bge-small-en-v1.5', {
-      dtype: 'q8',
-    });
-    queueModelStatus('<i class="fas fa-check" style="margin-right:6px;color:#22c55e"></i>Embedding model ready. Ask me anything!');
-  }
-  if (!kbEmbeddings) {
-    kbEmbeddings = await embedAll();
-  }
-}
+// ── Init: load KB + embeddings + query embedder ───────────────────────────────
+async function _init() {
+  const [kbRes, embRes] = await Promise.all([
+    fetch(new URL('kb.json', document.baseURI)),
+    fetch(new URL('kb-embeddings.json', document.baseURI)),
+  ]);
+  if (!kbRes.ok || !embRes.ok) throw new Error('Failed to load knowledge base files');
+  KB = await kbRes.json();
+  const emb = await embRes.json();
 
-function beginModelInit() {
-  if (modelInitPromise) return modelInitPromise;
-  embeddingInitPromise = _initEmbeddings();
-  modelInitPromise = (async () => {
-    try {
-      await embeddingInitPromise;
-      await loadGemmaInBackground();
-    } catch (err) {
-      modelInitPromise = null;
-      queueModelStatus('Failed to load models. Try refreshing the page.');
-      flushModelStatusQueue();
-      console.error('Agent model load error:', err);
-      throw err;
+  // Vectors are stored in the same order as kb.json (KB ids are intentionally
+  // non-unique — they map to page sections — so we align by index, not id).
+  if (!emb.vectors || emb.vectors.length !== KB.length) {
+    throw new Error('kb-embeddings.json is out of sync with kb.json; rebuild embeddings');
+  }
+  kbEmbeddings = KB.map((entry, i) => {
+    const v = emb.vectors[i];
+    if (v.id && v.id !== entry.id) {
+      console.warn(`Embedding/KB id mismatch at index ${i}: ${v.id} vs ${entry.id}`);
     }
-  })();
-  return modelInitPromise;
+    return v.vector;
+  });
+
+  transformersLib = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.1');
+  const { pipeline } = transformersLib;
+  extractor = await pipeline('feature-extraction', EMBED_MODEL, { dtype: EMBED_DTYPE });
 }
 
-async function detectGemmaBackend() {
-  if (navigator.gpu) {
-    try {
-      const adapter = await navigator.gpu.requestAdapter();
-      if (adapter) return { device: 'webgpu', dtype: 'q4f16', label: 'WebGPU' };
-    } catch (_) { /* WebGPU present but unusable, fall through */ }
-  }
-  return { device: 'wasm', dtype: 'q4', label: 'WASM (CPU)' };
-}
-
-async function loadGemmaInBackground() {
-  if (gemmaReady || !transformersLib) return;
-  const backend = await detectGemmaBackend();
-  queueModelStatus(
-    `<i class="fas fa-download" style="margin-right:6px"></i>Loading Gemma 4 via ${backend.label}... <span id="gemma-progress">0%</span>`
-  );
-  try {
-    const { AutoProcessor, Gemma4ForConditionalGeneration } = transformersLib;
-    gemmaProcessor = await AutoProcessor.from_pretrained('onnx-community/gemma-4-E2B-it-ONNX');
-    gemmaModel = await Gemma4ForConditionalGeneration.from_pretrained(
-      'onnx-community/gemma-4-E2B-it-ONNX',
-      {
-        dtype: backend.dtype,
-        device: backend.device,
-        progress_callback: (info) => {
-          if (info.status === 'progress_total') {
-            const el = document.getElementById('gemma-progress');
-            if (el) el.textContent = `${Math.round(info.progress)}%`;
-          }
-        },
-      }
-    );
-    gemmaReady = true;
-    queueModelStatus(
-      `<i class="fas fa-check" style="margin-right:6px;color:#22c55e"></i>Gemma 4 loaded (${backend.label}). Answers are now AI-generated.`
-    );
-  } catch (err) {
-    queueModelStatus(
-      '<i class="fas fa-info-circle" style="margin-right:6px;color:#f59e0b"></i>Gemma 4 unavailable. Using embedding-only mode.'
-    );
-    console.error('Gemma load error:', err);
-  }
+function beginInit() {
+  if (initPromise) return initPromise;
+  initPromise = _init().catch((err) => {
+    initPromise = null;
+    queueModelStatus('Failed to load the assistant. Try refreshing the page.');
+    flushModelStatusQueue();
+    console.error('Agent init error:', err);
+    throw err;
+  });
+  return initPromise;
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    beginModelInit().catch(() => {});
-  });
+  document.addEventListener('DOMContentLoaded', () => beginInit().catch(() => {}));
 } else {
-  beginModelInit().catch(() => {});
+  beginInit().catch(() => {});
 }
 
+// ── Streaming bot message helper ──────────────────────────────────────────────
 function addStreamingBotMessage() {
   const div = document.createElement('div');
   div.className = 'agent-msg bot';
@@ -523,7 +476,7 @@ function addStreamingBotMessage() {
   return {
     element: div,
     append(text) {
-      div.textContent += sanitizeGemmaDisplayText(text);
+      div.textContent += text;
       msgArea.scrollTop = msgArea.scrollHeight;
     },
     finish(sectionId) {
@@ -541,53 +494,65 @@ function addStreamingBotMessage() {
   };
 }
 
-async function generateWithGemma(query, retrievedEntries) {
+// ── Cloud generation via proxy (Ollama Cloud /api/chat, NDJSON stream) ─────────
+async function generateWithCloud(query, retrievedEntries) {
   const contextBlock = retrievedEntries
     .map((entry, i) => `[${i + 1}] ${entry.answer}`)
     .join('\n');
 
-  const messages = [
-    { role: 'system', content: GEMMA_SYSTEM_PROMPT },
-    { role: 'user', content: `Context:\n${contextBlock}\n\nQuestion: ${query}` },
-  ];
+  const body = {
+    model: CHAT_MODEL,
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: `Context:\n${contextBlock}\n\nQuestion: ${query}` },
+    ],
+    stream: true,
+    think: false,
+    options: { temperature: 0.2, num_predict: MAX_OUTPUT_TOKENS },
+  };
 
-  const prompt = gemmaProcessor.apply_chat_template(messages, {
-    enable_thinking: false,
-    add_generation_prompt: true,
+  const res = await fetch(AGENT_PROXY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
   });
-
-  const inputs = await gemmaProcessor(prompt, null, null, {
-    add_special_tokens: false,
-  });
-
-  const stream = addStreamingBotMessage();
-
-  const { TextStreamer } = transformersLib;
-  const streamer = new TextStreamer(gemmaProcessor.tokenizer, {
-    skip_prompt: true,
-    skip_special_tokens: false,
-    callback_function: (text) => {
-      stream.append(text);
-    },
-  });
-
-  const outputs = await gemmaModel.generate({
-    ...inputs,
-    max_new_tokens: 256,
-    do_sample: false,
-    streamer,
-  });
-
-  if (!stream.element.textContent.trim()) {
-    const decoded = gemmaProcessor.batch_decode(
-      outputs.slice(null, [inputs.input_ids.dims.at(-1), null]),
-      { skip_special_tokens: true },
-    );
-    if (decoded[0]) stream.element.textContent = sanitizeGemmaDisplayText(decoded[0]);
-  } else {
-    stream.element.textContent = sanitizeGemmaDisplayText(stream.element.textContent);
+  if (!res.ok || !res.body) {
+    throw new Error(`Proxy responded ${res.status}`);
   }
 
+  const stream = addStreamingBotMessage();
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let got = false;
+
+  const handleLine = (line) => {
+    const trimmed = line.trim();
+    if (!trimmed) return;
+    let obj;
+    try { obj = JSON.parse(trimmed); } catch (_) { return; }
+    if (obj.error) throw new Error(obj.error);
+    const piece = obj.message && obj.message.content;
+    if (piece) {
+      got = true;
+      stream.append(piece);
+    }
+  };
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let nl;
+    while ((nl = buffer.indexOf('\n')) !== -1) {
+      const line = buffer.slice(0, nl);
+      buffer = buffer.slice(nl + 1);
+      handleLine(line);
+    }
+  }
+  if (buffer.trim()) handleLine(buffer);
+
+  if (!got) throw new Error('Empty response from model');
   return stream;
 }
 
@@ -617,53 +582,62 @@ async function handleQuery(text) {
 
   addLoadingIndicator();
 
-  if (embeddingInitPromise) {
-    try {
-      await embeddingInitPromise;
-    } catch (_) {
-      removeLoadingIndicator();
-      addBotMessage('Failed to initialize the AI model. Please try refreshing the page.');
-      return;
-    }
+  try {
+    await beginInit();
+  } catch (_) {
+    removeLoadingIndicator();
+    addBotMessage('Failed to initialize the assistant. Please try refreshing the page.');
+    return;
   }
 
   if (!extractor || !kbEmbeddings) {
     removeLoadingIndicator();
-    addBotMessage('The model is still loading. Please wait a moment and try again.');
+    addBotMessage('The assistant is still loading. Please wait a moment and try again.');
     return;
   }
 
   try {
+    const intent = matchIntent(text);
     const queryVec = await embed(text);
-    const results = search(queryVec, 3);
+    const results = retrieve(queryVec, text, TOP_K, intent?.idx ?? null);
     removeLoadingIndicator();
 
     const best = results[0];
-    if (best.score < SIMILARITY_THRESHOLD) {
-      addBotMessage('That doesn\'t seem related to Mitesh\'s background. Try asking about his experience, skills, projects, or education.');
-      showChips(DEFAULT_CHIPS);
-      return;
+    const primaryIdx = intent?.idx ?? best.i;
+    const primary = KB[primaryIdx];
+
+    if (!best || best.cos < RELEVANCE_THRESHOLD) {
+      if (!intent) {
+        addBotMessage('That doesn\'t seem related to Mitesh\'s background. Try asking about his experience, skills, projects, or education.');
+        showChips(DEFAULT_CHIPS);
+        return;
+      }
     }
 
-    const chunk = KB[best.i];
-    const viewSectionId = pickViewSectionId(text, results);
+    const viewSectionId = pickViewSectionId(text, results, intent);
+    const hasSection = document.getElementById(viewSectionId);
 
-    if (gemmaReady) {
-      const topEntries = results
-        .filter(r => r.score >= SIMILARITY_THRESHOLD)
-        .map(r => KB[r.i]);
+    if (cloudGenerationEnabled()) {
+      const contextIdx = [];
+      const pushIdx = (i) => { if (i >= 0 && !contextIdx.includes(i)) contextIdx.push(i); };
+      pushIdx(primaryIdx);
+      if (primaryIdx === 11) pushIdx(26); // skills list + ML experience narrative
+      results
+        .filter((r) => r.cos >= RELEVANCE_THRESHOLD)
+        .forEach((r) => pushIdx(r.i));
+      const topEntries = contextIdx.slice(0, TOP_K).map((i) => KB[i]);
       try {
-        const stream = await generateWithGemma(text, topEntries);
-        stream.finish(viewSectionId);
+        const stream = await generateWithCloud(text, topEntries);
+        stream.finish(hasSection ? viewSectionId : null);
       } catch (genErr) {
-        console.error('Gemma generation error:', genErr);
-        addBotMessage(chunk.answer, viewSectionId);
+        console.error('Cloud generation error:', genErr);
+        addBotMessage(primary.answer, hasSection ? viewSectionId : null);
       }
     } else {
-      addBotMessage(chunk.answer, viewSectionId);
+      addBotMessage(primary.answer, hasSection ? viewSectionId : null);
     }
 
-    showChips(chunk.followUps);
+    showChips(primary.followUps);
   } catch (err) {
     removeLoadingIndicator();
     addBotMessage('Something went wrong. Please try again.');
