@@ -1,83 +1,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Portfolio AI agent
+// Portfolio chat agent (simple)
 //
-// Architecture (see README notes / build scripts):
-//   • Knowledge base lives in kb.json (data only, single source of truth).
-//   • kb-embeddings.json holds precomputed embeddings (built offline via
-//     scripts/build-embeddings.mjs) so we never re-embed the whole KB in-browser.
-//   • At runtime we embed ONLY the user's query in-browser with the same small
-//     model (bge-small) used offline, so vectors share one space.
-//   • Retrieval is hybrid: vector cosine + lexical keyword overlap.
-//   • Answer generation runs on Ollama Cloud (gemma4), called through a small
-//     serverless proxy that holds the API key as a secret (never shipped to the
-//     browser). If no proxy is configured, we fall back to the retrieved answer.
+// Reads visible text from this page and sends it as context to Ollama Cloud
+// (gemma4) through a serverless proxy. No separate knowledge base or retrieval.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── Config ──────────────────────────────────────────────────────────────────
-// Point this at your deployed proxy (Cloudflare Worker, etc.). The proxy adds the
-// Authorization header and forwards to https://ollama.com/api/chat. Leave as the
-// placeholder to run in retrieval-only mode (no cloud generation).
 const AGENT_PROXY_URL =
   (typeof window !== 'undefined' && window.AGENT_PROXY_URL) ||
-  'https://YOUR-WORKER-SUBDOMAIN.workers.dev/api/chat';
+  'https://YOUR-WORKER-SUBDOMAIN.workers.dev';
 
 const CHAT_MODEL =
-  (typeof window !== 'undefined' && window.AGENT_CHAT_MODEL) || 'gemma4:e4b';
+  (typeof window !== 'undefined' && window.AGENT_CHAT_MODEL) || 'gemma4';
 
-const EMBED_MODEL = 'Xenova/bge-small-en-v1.5';
-const EMBED_DTYPE = 'q8';
-const MAX_OUTPUT_TOKENS = 256;
-
-// Retrieval tuning.
-const TOP_K = 4;
-const VECTOR_WEIGHT = 0.65;
-const LEXICAL_WEIGHT = 0.35;
-const RELEVANCE_THRESHOLD = 0.2;
-
-// High-confidence intent rules: map phrasing to the best KB entry index.
-// Checked before hybrid retrieval so follow-up chips and paraphrases hit the right answer.
-const INTENT_RULES = [
-  {
-    re: /other\s+fedex\s+roles|all\s+(of\s+)?(his\s+)?fedex\s+roles|fedex\s+roles\s+(did|has)|tell\s+me\s+about\s+(the\s+)?fedex\s+roles|what\s+fedex\s+roles|how\s+many\s+times.*fedex|fedex\s+positions|roles\s+at\s+fedex/i,
-    idx: 4,
-    viewId: 'exp-fedex-analyst',
-  },
-  {
-    re: /\b(ml|machine\s+learning|ai|technical|tech)\s+skills\b|\bwhat\s+(are\s+)?(his|mitesh'?s?)\s+(key\s+)?skills\b|\bskills\s+does\s+he\b|\btoolkit\b|\btech\s+stack\b/i,
-    idx: 11,
-    viewId: 'edu-ms',
-  },
-  {
-    re: /\bnlp\s+skills\b|natural\s+language\s+processing\s+(skills|work|experience)/i,
-    idx: 25,
-    viewId: 'proj-tokengen',
-  },
-  {
-    re: /what\s+is\s+mitesh'?s?\s+experience|work\s+experience|professional\s+background|job\s+history|career/i,
-    idx: 5,
-    viewId: 'exp-fedex-analyst',
-  },
-  {
-    re: /who\s+is\s+mitesh|tell\s+me\s+about\s+mitesh\b|about\s+him\b/i,
-    idx: 24,
-    viewId: 'exp-fedex-analyst',
-  },
-  {
-    re: /what\s+is\s+mitesh\s+doing|current\s+role|right\s+now|what\s+does\s+he\s+do\s+now/i,
-    idx: 0,
-    viewId: 'exp-fedex-analyst',
-  },
-  {
-    re: /what\s+is\s+(his|mitesh'?s?)\s+education|where\s+did\s+he\s+study|educational\s+background/i,
-    idx: 10,
-    viewId: 'edu-ms',
-  },
-  {
-    re: /what\s+projects|projects\s+has\s+he\s+built|portfolio/i,
-    idx: 19,
-    viewId: 'section-projects',
-  },
-];
+const MAX_OUTPUT_TOKENS = 320;
 
 const CALL_SCHEDULING_URL = 'https://calendly.com/miteshadake';
 const CALL_INTENT_PATTERN = /\b(schedule|book|set up|setup|arrange)\b.*\b(call|meeting|chat)\b|\bcall\b.*\b(schedule|book|meeting)\b/i;
@@ -87,199 +22,143 @@ const RESUME_URL = typeof window !== 'undefined'
   : RESUME_PATH;
 const RESUME_INTENT_PATTERN = /\b(cv|resume|curriculum\s+vitae)\b|where\s+.*\bresume\b|resume\s+where|download\s+.*\b(cv|resume)\b/i;
 
-const SYSTEM_PROMPT = 'You are a concise portfolio assistant for Mitesh Adake. Answer questions using ONLY the provided context. If the context distinguishes where work was done (for example USC graduate work vs PICT undergraduate work), keep that distinction exactly -- do not say Phishing Detection or Object Detection were USC projects if the context says they were at PICT. If the context does not contain relevant information, say you are not sure. Keep responses brief (2-3 sentences max). Do not make up information. Do not use markdown formatting.';
+const SYSTEM_PROMPT =
+  'You are a concise portfolio assistant for Mitesh Adake. Answer using ONLY the website content provided in the user message. ' +
+  'If the content does not contain the answer, say you are not sure. Keep responses brief (2-4 sentences). ' +
+  'Do not invent facts. Do not use markdown formatting. ' +
+  'When mentioning LinkedIn, GitHub, or Kaggle, use those plain words (links are added automatically).';
 
 const DEFAULT_CHIPS = [
   "What is Mitesh's experience?",
-  "Tell me about the FedEx roles",
-  "Show me his education",
-  "What projects has he built?",
-  "Schedule a call with Mitesh",
-  "Resume"
+  'Tell me about his education',
+  'What projects has he built?',
+  'Tell me about the GGUF k-quant attack project',
+  'Schedule a call with Mitesh',
+  'Resume',
 ];
 
 function cloudGenerationEnabled() {
   return typeof AGENT_PROXY_URL === 'string' && !AGENT_PROXY_URL.includes('YOUR-WORKER');
 }
 
-// ── State ───────────────────────────────────────────────────────────────────
-let KB = [];
-let kbEmbeddings = null; // array aligned to KB: number[][]
-let extractor = null;
-let transformersLib = null;
-/** One shared init chain (load data + embedder), started on page load. */
-let initPromise = null;
-/** Model/data load status lines; flushed into the chat when the panel is open. */
-const modelStatusQueue = [];
+// ── Page context (source of truth = what's on this page) ─────────────────────
 
-function queueModelStatus(html) {
-  modelStatusQueue.push(html);
-  flushModelStatusQueue();
+let cachedPageContext = null;
+
+function buildPageContext() {
+  const main = document.getElementById('main-content');
+  if (!main) return '';
+
+  const clone = main.cloneNode(true);
+  clone.querySelectorAll('script, style, noscript').forEach((n) => n.remove());
+
+  return clone.innerText
+    .replace(/\u00a0/g, ' ')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
-function flushModelStatusQueue() {
-  if (!panelOpen) return;
-  while (modelStatusQueue.length) {
-    addBotMessage(modelStatusQueue.shift());
-  }
+function getPageContext() {
+  if (!cachedPageContext) cachedPageContext = buildPageContext();
+  return cachedPageContext;
 }
 
-// ── Vector helpers ────────────────────────────────────────────────────────────
-function dot(a, b) {
-  let s = 0;
-  for (let i = 0; i < a.length; i++) s += a[i] * b[i];
-  return s;
-}
-function norm(a) { return Math.sqrt(dot(a, a)); }
-function cosine(a, b) { return dot(a, b) / (norm(a) * norm(b) + 1e-8); }
+/** Guess which on-page section to scroll to from the question. */
+function pickViewSectionId(query) {
+  const rules = [
+    [/gguf|k-quant|quantization attack|content.injection/i, 'proj-gguf-attack'],
+    [/tokengen|token gen/i, 'proj-tokengen'],
+    [/hate speech|unlearning|llama\s*3/i, 'proj-hate-speech'],
+    [/anytoken|any token/i, 'proj-anytoken'],
+    [/pricenet|stock price/i, 'proj-pricenet'],
+    [/phishing|edge extension|browser extension/i, 'proj-phishing'],
+    [/object detection|computer vision project/i, 'proj-objdet'],
+    [/education|usc|viterbi|\bms\b|master|graduate|gpa|coursework/i, 'edu-ms'],
+    [/pict|undergrad|bachelor|\bb\.e\./i, 'edu-be'],
+    [/fedex|revenue science|pricing|work experience|internship/i, 'section-experience'],
+    [/nice\b|persistent|software engineer.*hyderabad/i, 'section-experience'],
+    [/talk|qiskit|quantum cryptography|presentation/i, 'section-talks'],
+    [/community|hackathon|mentor|qiskit advocate/i, 'section-beyond'],
+    [/chess|kaggle|football|soccer|hobby|hobbies|interest/i, 'section-beyond'],
+    [/project|portfolio|built|research/i, 'section-projects'],
+  ];
 
-async function embed(text) {
-  const out = await extractor(text, { pooling: 'mean', normalize: true });
-  return Array.from(out.data);
-}
-
-// ── Lexical helpers (keyword overlap component of hybrid retrieval) ───────────
-const STOPWORDS = new Set([
-  'a', 'an', 'the', 'and', 'or', 'of', 'to', 'in', 'on', 'at', 'for', 'is', 'are',
-  'was', 'were', 'be', 'been', 'his', 'her', 'he', 'she', 'him', 'me', 'my', 'i',
-  'you', 'your', 'it', 'its', 'about', 'what', 'who', 'when', 'where', 'how', 'did',
-  'does', 'do', 'has', 'have', 'had', 'tell', 'show', 'with', 'that', 'this', 'them',
-  'from', 'more', 'any', 'all', 'can', 'could', 'would', 'should'
-]);
-
-function tokenize(text) {
-  return (text.toLowerCase().match(/[a-z0-9.+#]+/g) || []).filter(
-    (t) => t.length > 1 && !STOPWORDS.has(t)
-  );
-}
-
-let kbTokenSets = null;
-function ensureKbTokenSets() {
-  if (kbTokenSets) return;
-  kbTokenSets = KB.map((entry) => new Set(tokenize(`${entry.text} ${entry.answer}`)));
-}
-
-function lexicalScore(queryTokens, idx) {
-  if (!queryTokens.length) return 0;
-  const set = kbTokenSets[idx];
-  let hits = 0;
-  for (const t of queryTokens) if (set.has(t)) hits++;
-  return hits / queryTokens.length;
-}
-
-/** Exact follow-up chip text -> KB index (built once KB is loaded). */
-let followUpIndex = null;
-function buildFollowUpIndex() {
-  if (followUpIndex) return;
-  followUpIndex = new Map();
-  const targets = {
-    'What other FedEx roles did he have?': 4,
-    'Tell me about the FedEx roles': 4,
-    'Tell me about his ML skills': 11,
-    'What ML skills does he use?': 11,
-    'What are his skills?': 11,
-    'What are his key skills?': 11,
-    'What is his experience?': 5,
-    "What is Mitesh's experience?": 5,
-    'Show me his education': 10,
-    'What NLP skills does he have?': 25,
-    'Tell me about his NLP skills': 25,
-  };
-  const viewByIdx = {
-    0: 'exp-fedex-analyst',
-    4: 'exp-fedex-analyst',
-    5: 'exp-fedex-analyst',
-    10: 'edu-ms',
-    11: 'edu-ms',
-    19: 'section-projects',
-    24: 'exp-fedex-analyst',
-    25: 'proj-tokengen',
-  };
-  for (const [phrase, idx] of Object.entries(targets)) {
-    followUpIndex.set(phrase.toLowerCase(), { idx, viewId: viewByIdx[idx] ?? null });
-  }
-}
-
-function matchIntent(query) {
-  buildFollowUpIndex();
-  const exact = followUpIndex.get(query.trim().toLowerCase());
-  if (exact) return { ...exact, source: 'followup' };
-
-  for (const rule of INTENT_RULES) {
-    if (rule.re.test(query)) return { idx: rule.idx, viewId: rule.viewId, source: 'intent' };
+  for (const [re, id] of rules) {
+    if (re.test(query) && document.getElementById(id)) return id;
   }
   return null;
 }
 
-/** Hybrid retrieval with optional intent boost on a specific entry. */
-function retrieve(queryVec, queryText, topK = TOP_K, intentIdx = null) {
-  ensureKbTokenSets();
-  const queryTokens = tokenize(queryText);
-  const scored = kbEmbeddings.map((vec, i) => {
-    const cos = cosine(queryVec, vec);
-    const lex = lexicalScore(queryTokens, i);
-    let score = VECTOR_WEIGHT * cos + LEXICAL_WEIGHT * lex;
-    if (intentIdx === i) score += 0.35; // strong boost for matched intent
-    return { i, cos, lex, score };
-  });
-  scored.sort((a, b) => b.score - a.score);
+// ── Message formatting ────────────────────────────────────────────────────────
 
-  // If intent matched, pin that entry at the top when it's reasonably relevant.
-  if (intentIdx != null) {
-    const pinned = scored.find((r) => r.i === intentIdx);
-    if (pinned && pinned.cos >= RELEVANCE_THRESHOLD * 0.85) {
-      const rest = scored.filter((r) => r.i !== intentIdx);
-      return [pinned, ...rest].slice(0, topK);
-    }
-  }
-  return scored.slice(0, topK);
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
-/** Pick scroll target; intent viewId takes precedence over regex heuristics. */
-function pickViewSectionId(query, results, intent) {
-  if (intent?.viewId) return intent.viewId;
+const BARE_LINK_RE = /\b((?:https?:\/\/)?(?:www\.)?(?:linkedin\.com\/in\/[\w-]+|github\.com\/[\w./-]+|kaggle\.com\/[\w.-]+|calendly\.com\/[\w./-]+|(?:tokengen|anytoken)\.streamlit\.app))(?:\/[^\s<,)]+)?/gi;
 
-  const above = results.filter((r) => r.cos >= RELEVANCE_THRESHOLD);
-  if (!above.length) return KB[results[0].i].id;
+const PROFILE_LINKS = {
+  linkedin: 'https://www.linkedin.com/in/mitesh-adake/',
+  github: 'https://github.com/mitadake',
+  kaggle: 'https://www.kaggle.com/miteshadake',
+};
 
-  const hasId = (id) => above.some((r) => KB[r.i].id === id);
-
-  const rules = [
-    { re: /\bNICE\b|at\s+nice\b|nice\s+intern|nice\s+data|data\s+engineer.*\bnice\b|serverless.*\bnice\b|\bnice\b.*(intern|data\s+engineer|aws|lambda|pune|mongodb|dynamo)/i, id: 'exp-nice' },
-    { re: /\bpersistent\b/i, id: 'exp-persistent' },
-    { re: /(fedex|fed\s+ex).*(summer|memphis)|summer.*(fedex|fed\s+ex)/i, id: 'exp-fedex-summer' },
-    { re: /(fedex|fed\s+ex).*(hyderabad|software\s+engineer)|hyderabad.*(fedex|fed\s+ex)/i, id: 'exp-fedex-swe' },
-    { re: /other\s+fedex\s+roles|all\s+fedex\s+roles|fedex\s+roles|roles\s+at\s+fedex/i, id: 'exp-fedex-analyst' },
-    { re: /analyst|revenue\s+science|current\s+role|right\s+now|plano/i, id: 'exp-fedex-analyst' },
-    { re: /\b(ml|machine\s+learning|technical|tech)\s+skills\b|\bskills\b/i, id: 'edu-ms' },
-    { re: /\bfedex\b|fed\s+ex/i, id: 'exp-fedex-intern' },
-    { re: /(usc|viterbi).*\bproject|\bproject.*(usc|viterbi)|projects.*at\s+usc|projects did he build at usc/i, id: 'section-projects' },
-    { re: /\busc\b|viterbi|(\bms\b|\bm\.s\.|master).*computer|graduate.*usc|usc.*(master|graduate|\bcs\b)/i, id: 'edu-ms' },
-    { re: /\bpict\b|undergraduate|bachelor|\bb\.e\.|pune institute of computer/i, id: 'edu-be' },
-    { re: /tokengen|token gen/i, id: 'proj-tokengen' },
-    { re: /hate speech|unlearning|llama\s*3/i, id: 'proj-hate-speech' },
-    { re: /anytoken|any token/i, id: 'proj-anytoken' },
-    { re: /pricenet|stock price/i, id: 'proj-pricenet' },
-    { re: /phishing|edge extension|browser extension/i, id: 'proj-phishing' },
-    { re: /object detection|computer vision project/i, id: 'proj-objdet' },
-    { re: /\btalk\b|qiskit|ieee|quantum cryptography|presentation|youtube.*quantum/i, id: 'section-talks' },
-    { re: /community|hackathon|mentor|qiskit advocate/i, id: 'section-community' },
-    { re: /chess|kaggle|football|soccer|hobby|hobbies|1685|us chess|interest/i, id: 'section-interests' },
-    { re: /what projects|portfolio|side project|projects has he/i, id: 'section-projects' },
-  ];
-
-  for (const { re, id } of rules) {
-    if (!re.test(query)) continue;
-    if (hasId(id)) return id;
-    if (id === 'section-interests' && /chess|kaggle|football|soccer|hobby|1685|interest|hobbies/i.test(query)) {
-      return id;
-    }
-  }
-
-  return KB[above[0].i].id;
+function agentLink(href, label) {
+  return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="agent-link">${label}</a>`;
 }
 
-// ── Page Actions ────────────────────────────────────────────────────────────
+function normalizeHref(match) {
+  let href = match;
+  if (!/^https?:\/\//i.test(href)) href = `https://${href}`;
+  return href.replace(/^https:\/\/linkedin\.com/i, 'https://www.linkedin.com');
+}
+
+function linkifyOutsideAnchors(html, replacer) {
+  const parts = html.split(/(<a\b[^>]*>[\s\S]*?<\/a>)/gi);
+  return parts.map((part, i) => (i % 2 === 1 ? part : replacer(part))).join('');
+}
+
+function linkifyBotMessage(text) {
+  let out = escapeHtml(text);
+
+  out = out.replace(
+    /\bLinkedIn\s*\((linkedin\.com\/in\/[\w-]+)\)/gi,
+    (_, path) => agentLink(normalizeHref(path), 'LinkedIn')
+  );
+  out = out.replace(
+    /\bGitHub\s*\((github\.com\/[\w./-]+)\)/gi,
+    (_, path) => agentLink(normalizeHref(path), 'GitHub')
+  );
+  out = out.replace(
+    /\bKaggle\s*\((kaggle\.com\/[\w.-]+)\)/gi,
+    (_, path) => agentLink(normalizeHref(path), 'Kaggle')
+  );
+
+  out = linkifyOutsideAnchors(out, (part) =>
+    part.replace(BARE_LINK_RE, (match) => agentLink(normalizeHref(match), match))
+  );
+
+  out = linkifyOutsideAnchors(out, (part) =>
+    part
+      .replace(/\bLinkedIn\b/g, (m) => agentLink(PROFILE_LINKS.linkedin, m))
+      .replace(/\bGitHub\b/g, (m) => agentLink(PROFILE_LINKS.github, m))
+      .replace(/\bKaggle\b/g, (m) => agentLink(PROFILE_LINKS.kaggle, m))
+  );
+
+  return out;
+}
+
+function formatBotMessage(content, { trustedHtml = false } = {}) {
+  return trustedHtml ? content : linkifyBotMessage(content);
+}
+
+// ── Page actions ──────────────────────────────────────────────────────────────
+
 function scrollToSection(id) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -291,27 +170,28 @@ function scrollToSection(id) {
   setTimeout(() => card.classList.remove('agent-highlight'), 3500);
 }
 
-// ── UI Bindings ─────────────────────────────────────────────────────────────
+// ── UI ────────────────────────────────────────────────────────────────────────
+
 const fab = document.getElementById('agent-fab');
 const fabHint = document.getElementById('agent-fab-hint');
 const fabHintTip = document.getElementById('agent-fab-hint-tip');
 const fabWrap = document.getElementById('agent-fab-wrap');
 const panel = document.getElementById('agent-panel');
-
-const HINT_TIP_ROTATION = [
-  'Ask about Mitesh, his resume, or book a call.',
-  'Try a suggested question, or type your own.',
-  'Questions about experience, projects, or education welcome.'
-];
-let hintTipInterval = null;
 const closeBtn = document.getElementById('agent-close');
 const msgArea = document.getElementById('agent-messages');
 const chipsArea = document.getElementById('agent-chips');
 const input = document.getElementById('agent-input');
 const sendBtn = document.getElementById('agent-send');
 
+const HINT_TIP_ROTATION = [
+  'Ask about Mitesh, his resume, or book a call.',
+  'Try a suggested question, or type your own.',
+  'Questions about experience, projects, or education welcome.',
+];
+
 let panelOpen = false;
 let firstOpen = true;
+let hintTipInterval = null;
 
 function setPanelAriaExpanded(open) {
   const v = open ? 'true' : 'false';
@@ -344,6 +224,7 @@ function startHintTipRotation() {
 }
 
 function togglePanel() {
+  if (!panel) return;
   panelOpen = !panelOpen;
   panel.classList.toggle('open', panelOpen);
   setPanelAriaExpanded(panelOpen);
@@ -355,34 +236,28 @@ function togglePanel() {
     firstOpen = false;
     addBotMessage('Hi! Ask me anything about Mitesh\'s experience, skills, projects, or education.');
     showChips(DEFAULT_CHIPS);
-    flushModelStatusQueue();
-  } else if (panelOpen) {
-    flushModelStatusQueue();
   }
 }
 
-fab.addEventListener('click', togglePanel);
+fab?.addEventListener('click', togglePanel);
 if (fabHint) fabHint.addEventListener('click', togglePanel);
-closeBtn.addEventListener('click', togglePanel);
+closeBtn?.addEventListener('click', togglePanel);
 
 setPanelAriaExpanded(false);
 startHintTipRotation();
 
-function addBotMessage(html, sectionId) {
+function addBotMessage(html, sectionId, { trustedHtml = false } = {}) {
   const div = document.createElement('div');
   div.className = 'agent-msg bot';
-  let content = html;
+  let content = formatBotMessage(html, { trustedHtml });
   if (sectionId) {
-    content += `<span class="view-link" data-section="${sectionId}">View on page &rarr;</span>`;
+    content += `<br><span class="view-link" data-section="${sectionId}">View on page &rarr;</span>`;
   }
   div.innerHTML = content;
   msgArea.appendChild(div);
-
-  const link = div.querySelector('.view-link');
-  if (link) {
-    link.addEventListener('click', () => scrollToSection(link.dataset.section));
-  }
-
+  div.querySelector('.view-link')?.addEventListener('click', (e) => {
+    scrollToSection(e.currentTarget.dataset.section);
+  });
   msgArea.scrollTop = msgArea.scrollHeight;
 }
 
@@ -396,7 +271,7 @@ function addUserMessage(text) {
 
 function showChips(chips) {
   chipsArea.innerHTML = '';
-  chips.forEach(text => {
+  chips.forEach((text) => {
     const btn = document.createElement('button');
     btn.className = 'agent-chip';
     btn.textContent = text;
@@ -415,57 +290,9 @@ function addLoadingIndicator() {
 }
 
 function removeLoadingIndicator() {
-  const el = document.getElementById('agent-loading');
-  if (el) el.remove();
+  document.getElementById('agent-loading')?.remove();
 }
 
-// ── Init: load KB + embeddings + query embedder ───────────────────────────────
-async function _init() {
-  const [kbRes, embRes] = await Promise.all([
-    fetch(new URL('kb.json', document.baseURI)),
-    fetch(new URL('kb-embeddings.json', document.baseURI)),
-  ]);
-  if (!kbRes.ok || !embRes.ok) throw new Error('Failed to load knowledge base files');
-  KB = await kbRes.json();
-  const emb = await embRes.json();
-
-  // Vectors are stored in the same order as kb.json (KB ids are intentionally
-  // non-unique — they map to page sections — so we align by index, not id).
-  if (!emb.vectors || emb.vectors.length !== KB.length) {
-    throw new Error('kb-embeddings.json is out of sync with kb.json; rebuild embeddings');
-  }
-  kbEmbeddings = KB.map((entry, i) => {
-    const v = emb.vectors[i];
-    if (v.id && v.id !== entry.id) {
-      console.warn(`Embedding/KB id mismatch at index ${i}: ${v.id} vs ${entry.id}`);
-    }
-    return v.vector;
-  });
-
-  transformersLib = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.1');
-  const { pipeline } = transformersLib;
-  extractor = await pipeline('feature-extraction', EMBED_MODEL, { dtype: EMBED_DTYPE });
-}
-
-function beginInit() {
-  if (initPromise) return initPromise;
-  initPromise = _init().catch((err) => {
-    initPromise = null;
-    queueModelStatus('Failed to load the assistant. Try refreshing the page.');
-    flushModelStatusQueue();
-    console.error('Agent init error:', err);
-    throw err;
-  });
-  return initPromise;
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => beginInit().catch(() => {}));
-} else {
-  beginInit().catch(() => {});
-}
-
-// ── Streaming bot message helper ──────────────────────────────────────────────
 function addStreamingBotMessage() {
   const div = document.createElement('div');
   div.className = 'agent-msg bot';
@@ -474,12 +301,14 @@ function addStreamingBotMessage() {
   msgArea.scrollTop = msgArea.scrollHeight;
 
   return {
-    element: div,
     append(text) {
       div.textContent += text;
       msgArea.scrollTop = msgArea.scrollHeight;
     },
     finish(sectionId) {
+      const raw = div.textContent;
+      div.textContent = '';
+      div.innerHTML = linkifyBotMessage(raw);
       if (sectionId) {
         const link = document.createElement('span');
         link.className = 'view-link';
@@ -494,17 +323,17 @@ function addStreamingBotMessage() {
   };
 }
 
-// ── Cloud generation via proxy (Ollama Cloud /api/chat, NDJSON stream) ─────────
-async function generateWithCloud(query, retrievedEntries) {
-  const contextBlock = retrievedEntries
-    .map((entry, i) => `[${i + 1}] ${entry.answer}`)
-    .join('\n');
+// ── Ollama Cloud via proxy ────────────────────────────────────────────────────
 
+async function generateWithCloud(query, pageContext) {
   const body = {
     model: CHAT_MODEL,
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
-      { role: 'user', content: `Context:\n${contextBlock}\n\nQuestion: ${query}` },
+      {
+        role: 'user',
+        content: `Website content:\n${pageContext}\n\nQuestion: ${query}`,
+      },
     ],
     stream: true,
     think: false,
@@ -516,10 +345,19 @@ async function generateWithCloud(query, retrievedEntries) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
+
   if (!res.ok || !res.body) {
-    throw new Error(`Proxy responded ${res.status}`);
+    let detail = '';
+    try {
+      const errJson = await res.json();
+      detail = errJson.error || JSON.stringify(errJson);
+    } catch (_) {
+      detail = await res.text().catch(() => '');
+    }
+    throw new Error(detail || `Proxy responded ${res.status}`);
   }
 
+  removeLoadingIndicator();
   const stream = addStreamingBotMessage();
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
@@ -530,7 +368,11 @@ async function generateWithCloud(query, retrievedEntries) {
     const trimmed = line.trim();
     if (!trimmed) return;
     let obj;
-    try { obj = JSON.parse(trimmed); } catch (_) { return; }
+    try {
+      obj = JSON.parse(trimmed);
+    } catch (_) {
+      return;
+    }
     if (obj.error) throw new Error(obj.error);
     const piece = obj.message && obj.message.content;
     if (piece) {
@@ -545,18 +387,17 @@ async function generateWithCloud(query, retrievedEntries) {
     buffer += decoder.decode(value, { stream: true });
     let nl;
     while ((nl = buffer.indexOf('\n')) !== -1) {
-      const line = buffer.slice(0, nl);
+      handleLine(buffer.slice(0, nl));
       buffer = buffer.slice(nl + 1);
-      handleLine(line);
     }
   }
   if (buffer.trim()) handleLine(buffer);
-
   if (!got) throw new Error('Empty response from model');
   return stream;
 }
 
-// ── Query Handling ──────────────────────────────────────────────────────────
+// ── Query handling ────────────────────────────────────────────────────────────
+
 async function handleQuery(text) {
   if (!text.trim()) return;
 
@@ -566,86 +407,49 @@ async function handleQuery(text) {
 
   if (CALL_INTENT_PATTERN.test(text)) {
     addBotMessage(
-      `Absolutely - you can schedule a call here: <a href="${CALL_SCHEDULING_URL}" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline hover:text-blue-300">Schedule a call</a>. You can also message on <a href="https://www.linkedin.com/in/mitesh-adake/" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline hover:text-blue-300">LinkedIn</a>.`
+      `Absolutely - you can schedule a call here: <a href="${CALL_SCHEDULING_URL}" target="_blank" rel="noopener noreferrer" class="agent-link">Schedule a call</a>. You can also message on <a href="https://www.linkedin.com/in/mitesh-adake/" target="_blank" rel="noopener noreferrer" class="agent-link">LinkedIn</a>.`,
+      null,
+      { trustedHtml: true }
     );
-    showChips(['What is his experience?', 'What projects has he built?', 'What NLP skills does he have?']);
+    showChips(DEFAULT_CHIPS);
     return;
   }
 
   if (RESUME_INTENT_PATTERN.test(text)) {
     addBotMessage(
-      `Here is Mitesh\'s resume (PDF): <a href="${RESUME_URL}" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline hover:text-blue-300">Open resume</a>.`
+      `Here is Mitesh\'s resume (PDF): <a href="${RESUME_URL}" target="_blank" rel="noopener noreferrer" class="agent-link">Open resume</a>.`,
+      null,
+      { trustedHtml: true }
     );
-    showChips(['What is his experience?', 'Schedule a call with Mitesh', 'What projects has he built?']);
+    showChips(DEFAULT_CHIPS);
+    return;
+  }
+
+  if (!cloudGenerationEnabled()) {
+    addBotMessage('The chat assistant is not configured. Set AGENT_PROXY_URL in index.html.');
     return;
   }
 
   addLoadingIndicator();
 
   try {
-    await beginInit();
-  } catch (_) {
-    removeLoadingIndicator();
-    addBotMessage('Failed to initialize the assistant. Please try refreshing the page.');
-    return;
-  }
-
-  if (!extractor || !kbEmbeddings) {
-    removeLoadingIndicator();
-    addBotMessage('The assistant is still loading. Please wait a moment and try again.');
-    return;
-  }
-
-  try {
-    const intent = matchIntent(text);
-    const queryVec = await embed(text);
-    const results = retrieve(queryVec, text, TOP_K, intent?.idx ?? null);
-    removeLoadingIndicator();
-
-    const best = results[0];
-    const primaryIdx = intent?.idx ?? best.i;
-    const primary = KB[primaryIdx];
-
-    if (!best || best.cos < RELEVANCE_THRESHOLD) {
-      if (!intent) {
-        addBotMessage('That doesn\'t seem related to Mitesh\'s background. Try asking about his experience, skills, projects, or education.');
-        showChips(DEFAULT_CHIPS);
-        return;
-      }
-    }
-
-    const viewSectionId = pickViewSectionId(text, results, intent);
-    const hasSection = document.getElementById(viewSectionId);
-
-    if (cloudGenerationEnabled()) {
-      const contextIdx = [];
-      const pushIdx = (i) => { if (i >= 0 && !contextIdx.includes(i)) contextIdx.push(i); };
-      pushIdx(primaryIdx);
-      if (primaryIdx === 11) pushIdx(26); // skills list + ML experience narrative
-      results
-        .filter((r) => r.cos >= RELEVANCE_THRESHOLD)
-        .forEach((r) => pushIdx(r.i));
-      const topEntries = contextIdx.slice(0, TOP_K).map((i) => KB[i]);
-      try {
-        const stream = await generateWithCloud(text, topEntries);
-        stream.finish(hasSection ? viewSectionId : null);
-      } catch (genErr) {
-        console.error('Cloud generation error:', genErr);
-        addBotMessage(primary.answer, hasSection ? viewSectionId : null);
-      }
-    } else {
-      addBotMessage(primary.answer, hasSection ? viewSectionId : null);
-    }
-
-    showChips(primary.followUps);
+    const pageContext = getPageContext();
+    const viewSectionId = pickViewSectionId(text);
+    const stream = await generateWithCloud(text, pageContext);
+    stream.finish(viewSectionId);
+    showChips(DEFAULT_CHIPS);
   } catch (err) {
     removeLoadingIndicator();
-    addBotMessage('Something went wrong. Please try again.');
     console.error('Agent query error:', err);
+    addBotMessage('Something went wrong reaching the assistant. Please try again in a moment.');
   }
 }
 
-sendBtn.addEventListener('click', () => handleQuery(input.value));
-input.addEventListener('keydown', (e) => {
+sendBtn?.addEventListener('click', () => handleQuery(input.value));
+input?.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') handleQuery(input.value);
 });
+
+if (!fab || !panel || !closeBtn || !msgArea || !sendBtn || !input) {
+  console.warn('Portfolio chat: missing DOM elements; agent disabled.');
+}

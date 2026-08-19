@@ -1235,6 +1235,14 @@
             text-decoration: underline;
         }
 
+        .agent-msg a.agent-link {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+        .agent-msg a.agent-link:hover {
+            color: var(--accent-secondary);
+        }
+
         .agent-chips {
             display: flex;
             flex-wrap: wrap;
@@ -2163,10 +2171,10 @@
             document.querySelectorAll('.col-heading-reveal').forEach(el => observer.observe(el));
         })();
     </script>
-    <!-- AI agent config: set your deployed proxy URL here (holds the Ollama key server-side). -->
+    <!-- AI agent: Ollama Cloud proxy URL (API key stays on the Worker). -->
     <script>
         window.AGENT_PROXY_URL = 'https://mitadake-ollama-proxy.mitadake.workers.dev';
-        window.AGENT_CHAT_MODEL = 'gemma4:e4b';
+        window.AGENT_CHAT_MODEL = 'gemma4';
     </script>
     <script src="agent.js"></script>
 </body>

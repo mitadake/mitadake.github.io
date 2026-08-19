@@ -69,7 +69,7 @@ export default {
       return json({ error: 'Invalid JSON body' }, 400, cors);
     }
 
-    const model = payload.model || 'gemma4:e4b';
+    const model = payload.model || 'gemma4';
     if (!ALLOWED_MODELS.has(model)) {
       return json({ error: `Model not allowed: ${model}` }, 400, cors);
     }
