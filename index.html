@@ -384,11 +384,15 @@
             overflow: hidden;
             min-height: calc(100vh - var(--nav-height));
             margin-top: var(--nav-height);
-            display: flex;
-            align-items: center;
+            padding: 3rem 0 5rem;
             background: linear-gradient(145deg, #0c0c14 0%, #14141f 45%, #0f1018 100%);
             background-size: 200% 200%;
             animation: hero-bg-shift 22s ease-in-out infinite;
+        }
+
+        .hero-bg > .container {
+            position: relative;
+            z-index: 1;
         }
 
         .hero-bg::before,
@@ -567,6 +571,22 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
+        button.hero-social-link {
+            font: inherit;
+            cursor: pointer;
+        }
+
+        .hero-bg .btn-ghost {
+            color: rgba(255, 255, 255, 0.92);
+            border-color: rgba(255, 255, 255, 0.28);
+        }
+
+        .hero-bg .btn-ghost:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.45);
+        }
+
         .hero-scroll-hint {
             position: absolute;
             bottom: 2rem;
@@ -581,6 +601,8 @@
             letter-spacing: 0.06em;
             text-transform: uppercase;
             animation: hero-scroll-bob 2.5s ease-in-out infinite;
+            z-index: 2;
+            text-decoration: none;
         }
 
         .hero-scroll-hint i { font-size: 0.875rem; }
@@ -726,37 +748,29 @@
             max-width: 48rem;
             margin: 0 auto;
         }
-        
-        /* Neural Network Theme */
+
+        /* Neural / projects background (not used on hero) */
         .neural-bg {
             position: relative;
             overflow: hidden;
         }
-        
+
         .neural-bg::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
+            inset: 0;
+            background-image:
                 radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
                 radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
                 radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
             pointer-events: none;
             z-index: 0;
         }
-        
-        @keyframes neuron-pulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.8; }
-        }
-        
+
         .project-glow {
             position: relative;
         }
-        
+
         .project-glow::before {
             content: '';
             position: absolute;
@@ -768,11 +782,29 @@
             transition: opacity 0.4s ease;
             filter: blur(8px);
         }
-        
+
         .project-glow:hover::before {
             opacity: 1;
         }
-        
+
+        @keyframes float-particle {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0.4; }
+            25% { transform: translateY(-10px) translateX(5px); opacity: 0.7; }
+            50% { transform: translateY(-5px) translateX(-5px); opacity: 0.5; }
+            75% { transform: translateY(-15px) translateX(3px); opacity: 0.6; }
+        }
+
+        .floating-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.6);
+            animation: float-particle 6s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
         .gradient-text {
             background: linear-gradient(135deg, var(--accent), var(--accent-secondary), #3b82f6);
             -webkit-background-clip: text;
@@ -822,93 +854,6 @@
         #back-to-top:hover {
             background: var(--accent-light);
             border-color: var(--accent);
-        }
-        
-        @keyframes float-particle {
-            0%, 100% { transform: translateY(0) translateX(0); opacity: 0.4; }
-            25% { transform: translateY(-10px) translateX(5px); opacity: 0.7; }
-            50% { transform: translateY(-5px) translateX(-5px); opacity: 0.5; }
-            75% { transform: translateY(-15px) translateX(3px); opacity: 0.6; }
-        }
-        
-        .floating-particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: rgba(99, 102, 241, 0.6);
-            animation: float-particle 6s ease-in-out infinite;
-            pointer-events: none;
-        }
-        
-        /* Neural Network Theme */
-        .neural-bg {
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .neural-bg::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
-                radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
-        }
-        
-        @keyframes neuron-pulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.8; }
-        }
-        
-        .project-glow {
-            position: relative;
-        }
-        
-        .project-glow::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.3), rgba(59, 130, 246, 0.3));
-            border-radius: inherit;
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            filter: blur(8px);
-        }
-        
-        .project-glow:hover::before {
-            opacity: 1;
-        }
-        
-        .gradient-text {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        @keyframes float-particle {
-            0%, 100% { transform: translateY(0) translateX(0); opacity: 0.4; }
-            25% { transform: translateY(-10px) translateX(5px); opacity: 0.7; }
-            50% { transform: translateY(-5px) translateX(-5px); opacity: 0.5; }
-            75% { transform: translateY(-15px) translateX(3px); opacity: 0.6; }
-        }
-        
-        .floating-particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: rgba(99, 102, 241, 0.6);
-            animation: float-particle 6s ease-in-out infinite;
-            pointer-events: none;
         }
 
         /* ── Scroll-reveal animations for Experience & Education ─── */
@@ -1413,7 +1358,7 @@
 
     <main id="main-content">
     <!-- Hero -->
-    <header class="hero-bg text-white neural-bg">
+    <header class="hero-bg text-white">
         <!-- Floating Neural Particles -->
         <div class="floating-particle" style="top: 15%; left: 10%; animation-delay: 0s;"></div>
         <div class="floating-particle" style="top: 25%; left: 85%; animation-delay: 1s;"></div>
@@ -1441,10 +1386,10 @@
                         <a href="#section-projects" class="btn-primary">
                             <i class="fas fa-folder-open"></i> View Projects
                         </a>
-                        <a href="assets/Resume__Mitesh__Adake.pdf" target="_blank" rel="noopener noreferrer" class="btn-ghost" style="color: white; border-color: rgba(255,255,255,0.25);">
+                        <a href="assets/Resume__Mitesh__Adake.pdf" target="_blank" rel="noopener noreferrer" class="btn-ghost">
                             <i class="fas fa-file-pdf"></i> Resume
                         </a>
-                        <button type="button" id="hero-chat-btn" class="btn-ghost" style="color: white; border-color: rgba(255,255,255,0.25);">
+                        <button type="button" id="hero-chat-btn" class="btn-ghost">
                             <i class="fas fa-comment-dots"></i> Chat
                         </button>
                     </div>
@@ -1745,9 +1690,9 @@
     <hr class="section-divider max-w-4xl mx-auto">
 
     <!-- Talks -->
-    <section class="section-block alt-bg fade-in-section" id="section-talks">
+    <section class="section-block alt-bg" id="section-talks">
         <div class="container mx-auto px-4 max-w-4xl">
-            <div class="section-header">
+            <div class="section-header fade-in-section">
                 <span class="section-label">Speaking</span>
                 <h2 class="section-title gradient-text">Talks</h2>
                 <p class="section-subtitle">Conference talks on quantum computing, cryptography, and ML.</p>
@@ -1784,9 +1729,9 @@
     <hr class="section-divider max-w-4xl mx-auto">
 
     <!-- Projects -->
-    <section class="section-block neural-bg fade-in-section" id="section-projects">
+    <section class="section-block neural-bg" id="section-projects">
         <div class="container mx-auto px-4 max-w-6xl relative z-10">
-            <div class="section-header">
+            <div class="section-header fade-in-section">
                 <span class="section-label">Portfolio</span>
                 <h2 class="section-title gradient-text">Projects</h2>
                 <p class="section-subtitle">Research and tools spanning LLM safety, interpretability, and applied ML.</p>
@@ -1855,8 +1800,14 @@
                         </a>
                     </div>
                 </div>
-                        <a href="https://tokengen.streamlit.app/" target="_blank" class="btn-primary">Website</a>
-                        <a href="https://github.com/mitadake/tokengen" target="_blank" class="btn-secondary project-btn-outline theme-text-primary">
+
+                <!-- Hate Speech Unlearning -->
+                <div class="p-7 rounded-lg border theme-card" id="proj-hate-speech">
+                    <h3 class="text-lg font-semibold mb-2 theme-text-primary">Hate Speech Unlearning for LLMs</h3>
+                    <p class="text-base theme-text-secondary mb-4">Implemented Task Vector Arithmetic, Contrastive Learning, and Fine-tuning to remove hate speech from LLaMA 3 models, dropping harmful rate from 62% to 34%.</p>
+                    <div class="flex flex-wrap gap-1">
+                        <span class="tech-tag">LLaMA 3</span>
+                        <span class="tech-tag">LLM Fine-tuning</span>
                         <span class="tech-tag">LLM Safety</span>
                     </div>
                 </div>
@@ -1909,9 +1860,9 @@
     <hr class="section-divider max-w-4xl mx-auto">
 
     <!-- Beyond the Code -->
-    <section class="section-block alt-bg fade-in-section" id="section-beyond">
+    <section class="section-block alt-bg" id="section-beyond">
         <div class="container mx-auto px-4 max-w-4xl">
-            <div class="section-header">
+            <div class="section-header fade-in-section">
                 <span class="section-label">Life</span>
                 <h2 class="section-title gradient-text">Beyond the Code</h2>
                 <p class="section-subtitle">Community, competition, and the interests that keep me curious.</p>
@@ -2158,19 +2109,31 @@
         // ── Fade-in sections ──
         (function initFadeSections() {
             const els = document.querySelectorAll('.fade-in-section');
+            const reveal = (el) => el.classList.add('visible');
             if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                els.forEach(el => el.classList.add('visible'));
+                els.forEach(reveal);
                 return;
             }
             const obs = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
+                        reveal(entry.target);
                         obs.unobserve(entry.target);
                     }
                 });
-            }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-            els.forEach(el => obs.observe(el));
+            }, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
+            els.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                if (rect.top < window.innerHeight * 0.92) reveal(el);
+                else obs.observe(el);
+            });
+            document.querySelectorAll('.nav-link[href^="#"]').forEach(link => {
+                link.addEventListener('click', () => {
+                    const id = link.getAttribute('href').slice(1);
+                    const section = document.getElementById(id);
+                    section?.querySelectorAll('.fade-in-section').forEach(reveal);
+                });
+            });
         })();
 
         (function initScrollReveal() {
